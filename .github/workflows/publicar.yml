@@ -1,0 +1,81 @@
+# Compila, prueba y publica la tienda en GitHub Pages en cada push a main.
+# Si algo falla (un error en el CSV, una prueba), no se publica nada y el sitio sigue como estaba.
+name: Publicar en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  ASTRO_TELEMETRY_DISABLED: '1'
+
+jobs:
+  compilar:
+    name: Revisar, probar y compilar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Revisar el catálogo (CSV)
+        run: npm run validar
+
+      - name: Tipos y lint
+        run: npm run check
+
+      - name: Pruebas de lógica
+        run: npm test
+
+      - name: Compilar
+        run: npm run build
+
+      - name: Revisar el sitio compilado
+        run: npm run test:compilado
+
+      - name: Instalar el navegador de pruebas
+        run: npx playwright install --with-deps chromium
+
+      - name: Recorridos en teléfono (390 px) y computadora (1280 px)
+        run: npm run test:e2e
+
+      - name: Guardar el informe si fallan los recorridos
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: informe-playwright
+          path: test-results/
+          retention-days: 7
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  publicar:
+    name: Publicar
+    needs: compilar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - id: despliegue
+        uses: actions/deploy-pages@v5

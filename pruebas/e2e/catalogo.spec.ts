@@ -1,7 +1,7 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { dinero, esTelefono } from './ayudas.ts';
 
-async function abrirFiltros(page: import('@playwright/test').Page) {
+async function abrirFiltros(page: Page) {
   if (esTelefono(page)) await page.getByRole('button', { name: /filtrar y ordenar/i }).click();
 }
 
