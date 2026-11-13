@@ -37,7 +37,7 @@ En línea en <https://rengifojjrr.github.io/azetacargo/>, en español (raíz) y 
 | Prueba | Resultado |
 | --- | --- |
 | `npm run check` (astro check + eslint) | 0 errores, 0 avisos |
-| `npm test` (Vitest: CSV, precios, carrito, número de pedido, mensajes, filtros, rutas, colores) | 53 pruebas OK |
+| `npm test` (Vitest: CSV, precios, carrito, número de pedido, mensajes, filtros, rutas, colores, optimización de fotos) | 55 pruebas OK |
 | `npm run test:compilado` (dist/: `border-radius` ≤ 2 px, hex solo en tokens, fuentes propias, sin `CNAME`, idioma/título/descripción/hreflang en cada página, `schema.org/Product` en cada ficha, índice JSON) | 9 pruebas OK |
 | `npm run test:e2e` (Playwright, 390 × 844 y 1280 × 800): recorrido Tienda → Energía → Agregar → Carrito → Hacer pedido, ficha con cantidad, agotados, filtros, orden, búsqueda, idiomas, pedido en inglés, cotización, páginas, 404, sin menciones de pagos o licencias para Cuba, y axe (WCAG 2.2 AA) en 8 páginas | 49 pruebas OK |
 | Lighthouse móvil (local) en inicio, catálogo y ficha | Rendimiento 99 · Accesibilidad 100 · Buenas prácticas 100 · SEO 66 (solo por el `noindex` de la versión de prueba) |
