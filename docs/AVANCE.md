@@ -41,3 +41,6 @@ En línea en <https://rengifojjrr.github.io/azetacargo/>, en español (raíz) y 
 | `npm run test:compilado` (dist/: `border-radius` ≤ 2 px, hex solo en tokens, fuentes propias, sin `CNAME`, idioma/título/descripción/hreflang en cada página, `schema.org/Product` en cada ficha, índice JSON) | 9 pruebas OK |
 | `npm run test:e2e` (Playwright, 390 × 844 y 1280 × 800): recorrido Tienda → Energía → Agregar → Carrito → Hacer pedido, ficha con cantidad, agotados, filtros, orden, búsqueda, idiomas, pedido en inglés, cotización, páginas, 404, sin menciones de pagos o licencias para Cuba, y axe (WCAG 2.2 AA) en 8 páginas | 49 pruebas OK |
 | Lighthouse móvil (local) en inicio, catálogo y ficha | Rendimiento 99 · Accesibilidad 100 · Buenas prácticas 100 · SEO 66 (solo por el `noindex` de la versión de prueba) |
+| GitHub Actions (las mismas pruebas antes de publicar) | Las dos primeras publicaciones en verde |
+| Recorridos de Playwright contra el sitio publicado (`URL_PRUEBAS=https://rengifojjrr.github.io/azetacargo/ npx playwright test`), en 390 y 1280 px: carga, el carrito suma y el pedido arma el mensaje | 49 pruebas OK |
+| Lighthouse móvil en el sitio publicado (inicio, catálogo y ficha) | Rendimiento 100 · Accesibilidad 100 · Buenas prácticas 100 · SEO 66 (por el `noindex`); LCP ≈ 1,2 s, CLS 0, TBT 0 ms |
