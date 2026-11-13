@@ -1,0 +1,70 @@
+---
+import Icono from '../componentes/Icono.astro';
+import PaginaTexto from '../layouts/PaginaTexto.astro';
+import type { Idioma } from '../lib/catalogo.ts';
+import { ruta } from '../i18n/rutas.ts';
+import { textos } from '../i18n/textos.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+
+const { idioma } = Astro.props;
+const t = textos(idioma);
+const iconos = ['tienda', 'camion', 'caja', 'contenedor'] as const;
+---
+
+<PaginaTexto idioma={idioma} pagina="envios" titulo={t.envios.titulo} descripcion={t.envios.descripcion}>
+  <ul class="envios" role="list">
+    {
+      t.envios.secciones.map((s, i) => (
+        <li>
+          <Icono nombre={iconos[i] ?? 'caja'} tamano={28} />
+          <div>
+            <h2>{s.titulo}</h2>
+            <p>{s.texto}</p>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="envios__mayoreo">
+    {t.envios.mayoreo}
+    <a class="enlace" href={ruta(idioma, 'mayoreo')}>{t.envios.mayoreoEnlace}</a>
+  </p>
+</PaginaTexto>
+
+<style>
+  .envios {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: var(--linea);
+  }
+
+  .envios li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--espacio-4);
+    padding: var(--espacio-5) 0;
+    border-bottom: var(--linea);
+    color: var(--color-marino);
+  }
+
+  .envios h2 {
+    font-size: var(--texto-l);
+    margin-bottom: var(--espacio-2);
+  }
+
+  .envios p {
+    color: var(--color-tinta);
+    max-width: 60ch;
+  }
+
+  .envios__mayoreo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-2);
+    margin-top: var(--espacio-6);
+  }
+</style>

@@ -25,8 +25,8 @@ describe('texto', () => {
   });
 
   it('une los miles con un espacio que no se parte', () => {
-    expect(unirMiles('Estación 1 000 Wh')).toBe('Estación 1 000 Wh');
-    expect(unirMiles('20 000 mAh y 2 baterías')).toBe('20 000 mAh y 2 baterías');
+    expect(unirMiles('Estación 1 000 Wh')).toBe('Estación 1\u00a0000 Wh');
+    expect(unirMiles('20 000 mAh y 2 baterías')).toBe('20\u00a0000 mAh y 2 baterías');
     expect(unirMiles('2 1000')).toBe('2 1000');
   });
 

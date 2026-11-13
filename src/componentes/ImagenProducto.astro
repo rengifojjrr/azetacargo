@@ -1,0 +1,69 @@
+---
+/**
+ * Foto del producto (con copias WebP al publicar) o, si no hay foto, el dibujo de línea de su categoría.
+ * Siempre en un marco 4:3 sobre gris claro.
+ */
+import type { Imagen } from '../lib/sitio.ts';
+
+interface Props {
+  imagen: Imagen;
+  alt: string;
+  tamanos?: string;
+  prioridad?: boolean;
+  class?: string;
+}
+
+const { imagen, alt, tamanos = '(min-width: 1024px) 300px, 50vw', prioridad = false, class: clase } = Astro.props;
+const carga = prioridad ? 'eager' : 'lazy';
+---
+
+<div class:list={['imagen-producto', clase, `imagen-producto--${imagen.tipo}`]}>
+  {
+    imagen.tipo === 'foto' && imagen.srcsetWebp ? (
+      <picture>
+        <source type="image/webp" srcset={imagen.srcsetWebp} sizes={tamanos} />
+        <img
+          src={imagen.src}
+          alt={alt}
+          width={imagen.ancho}
+          height={imagen.alto}
+          loading={carga}
+          decoding="async"
+          fetchpriority={prioridad ? 'high' : undefined}
+        />
+      </picture>
+    ) : (
+      <img
+        src={imagen.src}
+        alt={imagen.tipo === 'foto' ? alt : ''}
+        width={imagen.ancho}
+        height={imagen.alto}
+        loading={carga}
+        decoding="async"
+        fetchpriority={prioridad ? 'high' : undefined}
+      />
+    )
+  }
+</div>
+
+<style>
+  .imagen-producto {
+    aspect-ratio: 4 / 3;
+    background: var(--color-fondo-imagen);
+    overflow: hidden;
+  }
+
+  .imagen-producto :global(picture),
+  .imagen-producto :global(img) {
+    width: 100%;
+    height: 100%;
+  }
+
+  .imagen-producto :global(img) {
+    object-fit: contain;
+  }
+
+  .imagen-producto--foto :global(img) {
+    mix-blend-mode: multiply;
+  }
+</style>

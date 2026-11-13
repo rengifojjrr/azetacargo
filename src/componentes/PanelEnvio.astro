@@ -1,0 +1,68 @@
+---
+/** Panel «listo para enviar» (pedido o cotización). Lo llena src/cliente/envio.ts. */
+import type { Idioma } from '../lib/catalogo.ts';
+import { textos } from '../i18n/textos.ts';
+import Icono from './Icono.astro';
+
+interface Props {
+  idioma: Idioma;
+  id: string;
+  resumen: string;
+  copiar: string;
+}
+
+const { idioma, id, resumen, copiar } = Astro.props;
+const t = textos(idioma);
+---
+
+<section class="resumen-envio" id={id} data-panel-envio hidden aria-labelledby={`${id}-titulo`}>
+  <h2 class="resumen-envio__titulo" id={`${id}-titulo`} tabindex="-1" data-envio-titulo></h2>
+  <p data-envio-explicacion></p>
+  <p class="nota-prueba" data-nota-prueba hidden>
+    <Icono nombre="info" tamano={18} />
+    <span>{t.pedido.listoPrueba}</span>
+  </p>
+  <div>
+    <h3 class="rotulo resumen-envio__subtitulo">{resumen}</h3>
+    <pre class="resumen-envio__texto" tabindex="0" data-envio-texto></pre>
+  </div>
+  <div class="resumen-envio__acciones">
+    <a class="boton boton--primario" href="#" target="_blank" rel="noopener" data-enviar-whatsapp hidden>
+      <Icono nombre="mensaje" tamano={20} />
+      {t.pedido.enviarWhatsapp}
+    </a>
+    <a class="boton" href="#" data-enviar-correo hidden>
+      <Icono nombre="correo" tamano={20} />
+      {t.pedido.enviarCorreo}
+    </a>
+    <button class="boton" type="button" data-copiar>
+      <Icono nombre="copiar" tamano={20} />
+      {copiar}
+    </button>
+  </div>
+  <p class="resumen-envio__estado" role="status" data-estado-copia></p>
+  <slot />
+</section>
+
+<style>
+  .resumen-envio__titulo {
+    font-size: var(--texto-xl);
+  }
+
+  .resumen-envio__titulo:focus {
+    outline: none;
+  }
+
+  .resumen-envio__subtitulo {
+    margin-bottom: var(--espacio-2);
+  }
+
+  .resumen-envio__estado {
+    font-weight: 500;
+    color: var(--color-marino);
+  }
+
+  .resumen-envio__estado:empty {
+    display: none;
+  }
+</style>

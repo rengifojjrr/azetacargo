@@ -1,0 +1,132 @@
+---
+import '@fontsource/ibm-plex-sans/400.css';
+import '@fontsource/ibm-plex-sans/500.css';
+import '@fontsource/ibm-plex-sans-condensed/600.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '../estilos/tokens.css';
+import '../estilos/global.css';
+import fuenteTexto from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2?url';
+import fuenteTitulos from '@fontsource/ibm-plex-sans-condensed/files/ibm-plex-sans-condensed-latin-600-normal.woff2?url';
+import Cabecera from '../componentes/Cabecera.astro';
+import Franjas from '../componentes/Franjas.astro';
+import Pie from '../componentes/Pie.astro';
+import { esVersionDePrueba, negocio } from '../config/negocio.ts';
+import type { Idioma } from '../lib/catalogo.ts';
+import { colores, jsonSeguro } from '../lib/sitio.ts';
+import { recurso, ruta, type Pagina } from '../i18n/rutas.ts';
+import { textos } from '../i18n/textos.ts';
+
+interface Props {
+  idioma: Idioma;
+  titulo: string;
+  descripcion: string;
+  pagina: Pagina;
+  parametro?: string | undefined;
+  categoriaActiva?: string | undefined;
+  /** Imagen para compartir (ruta absoluta dentro del sitio). */
+  imagen?: string | undefined;
+  tipo?: 'website' | 'product';
+  datos?: object[];
+  /** false para páginas que no deben aparecer en buscadores. */
+  indexable?: boolean;
+  /** 404: sin canónica ni alternas. */
+  sinAlternas?: boolean;
+}
+
+const {
+  idioma,
+  titulo,
+  descripcion,
+  pagina,
+  parametro,
+  categoriaActiva,
+  imagen,
+  tipo = 'website',
+  datos = [],
+  indexable = true,
+  sinAlternas = false,
+} = Astro.props;
+
+const t = textos(idioma);
+const sitio = Astro.site ?? new URL('https://azetacargo.com');
+const absoluta = (camino: string) => new URL(camino, sitio).href;
+const urlEs = absoluta(ruta('es', pagina, parametro));
+const urlEn = absoluta(ruta('en', pagina, parametro));
+const canonica = idioma === 'es' ? urlEs : urlEn;
+const imagenCompartir = absoluta(imagen ?? recurso('compartir.png'));
+const noIndexar = esVersionDePrueba || !indexable;
+
+const organizacion = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: negocio.nombre,
+  url: absoluta(ruta('es', 'inicio')),
+  logo: absoluta(recurso('apple-touch-icon.png')),
+  address: { '@type': 'PostalAddress', addressLocality: 'Miami', addressRegion: 'FL', addressCountry: 'US' },
+};
+const datosPagina = pagina === 'inicio' ? [organizacion, ...datos] : datos;
+---
+
+<!doctype html>
+<html lang={idioma}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titulo}</title>
+    <meta name="description" content={descripcion} />
+    {noIndexar && <meta name="robots" content="noindex, nofollow" />}
+    {
+      !sinAlternas && (
+        <>
+          <link rel="canonical" href={canonica} />
+          <link rel="alternate" hreflang="es" href={urlEs} />
+          <link rel="alternate" hreflang="en" href={urlEn} />
+          <link rel="alternate" hreflang="x-default" href={urlEs} />
+        </>
+      )
+    }
+    <meta name="theme-color" content={colores.marino} />
+    <link rel="icon" href={recurso('favicon.svg')} type="image/svg+xml" />
+    <link rel="icon" href={recurso('favicon-32.png')} type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href={recurso('apple-touch-icon.png')} />
+    <link rel="preload" href={fuenteTexto} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fuenteTitulos} as="font" type="font/woff2" crossorigin />
+
+    <meta property="og:site_name" content={negocio.nombre} />
+    <meta property="og:type" content={tipo === 'product' ? 'product' : 'website'} />
+    <meta property="og:title" content={titulo} />
+    <meta property="og:description" content={descripcion} />
+    {!sinAlternas && <meta property="og:url" content={canonica} />}
+    <meta property="og:image" content={imagenCompartir} />
+    <meta property="og:locale" content={t.locale} />
+    <meta property="og:locale:alternate" content={textos(idioma === 'es' ? 'en' : 'es').locale} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {datosPagina.map((d) => <script type="application/ld+json" set:html={jsonSeguro(d)} />)}
+  </head>
+  <body data-idioma={idioma}>
+    <a class="saltar" href="#contenido">{t.saltar}</a>
+    <Franjas idioma={idioma} />
+    <Cabecera idioma={idioma} pagina={pagina} parametro={parametro} categoriaActiva={categoriaActiva} />
+    <main id="contenido" tabindex="-1">
+      <slot />
+    </main>
+    <Pie idioma={idioma} pagina={pagina} parametro={parametro} />
+
+    <div class="aviso-flotante" data-aviso hidden>
+      <span data-aviso-texto></span>
+      <a href={ruta(idioma, 'carrito')}>{t.aviso.verCarrito}</a>
+    </div>
+    <div class="sr-only" role="status" aria-live="polite" data-anuncio></div>
+
+    <script>
+      import '../cliente/carrito-global.ts';
+    </script>
+  </body>
+</html>
+
+<style>
+  main:focus {
+    outline: none;
+  }
+</style>

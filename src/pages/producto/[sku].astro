@@ -1,0 +1,13 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import Producto from '../../vistas/Producto.astro';
+import { obtenerCatalogo } from '../../lib/sitio.ts';
+
+export const getStaticPaths = (() =>
+  obtenerCatalogo().productos.map((producto) => ({ params: { sku: producto.slug }, props: { producto } }))) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+const { producto } = Astro.props as Props;
+---
+
+<Producto idioma="es" producto={producto} />

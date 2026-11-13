@@ -1,0 +1,66 @@
+---
+/** Franjas de aviso arriba: «Versión de prueba» (sin WhatsApp) y «Precios y productos de ejemplo». */
+import { esVersionDePrueba } from '../config/negocio.ts';
+import type { Idioma } from '../lib/catalogo.ts';
+import { obtenerCatalogo } from '../lib/sitio.ts';
+import { textos } from '../i18n/textos.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+
+const t = textos(Astro.props.idioma);
+const { hayEjemplos } = obtenerCatalogo();
+---
+
+{
+  esVersionDePrueba && (
+    <p class="franja franja--prueba" data-franja="prueba">
+      <span class="contenedor franja__contenido">
+        <strong class="franja__titulo">{t.franjas.prueba}</strong>
+        <span>{t.franjas.pruebaDetalle}</span>
+      </span>
+    </p>
+  )
+}
+{
+  hayEjemplos && (
+    <p class="franja franja--ejemplo" data-franja="ejemplo">
+      <span class="contenedor franja__contenido">
+        <span>{t.franjas.ejemplo}</span>
+      </span>
+    </p>
+  )
+}
+
+<style>
+  .franja {
+    font-size: var(--texto-xs);
+    line-height: 1.4;
+  }
+
+  .franja__contenido {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--espacio-3);
+    padding-block: var(--espacio-2);
+  }
+
+  .franja--prueba {
+    background: var(--color-tinta);
+    color: var(--color-blanco);
+  }
+
+  .franja__titulo {
+    font-family: var(--fuente-titulos);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .franja--ejemplo {
+    background: var(--color-fondo-imagen);
+    color: var(--color-tinta);
+    border-bottom: var(--linea);
+  }
+</style>

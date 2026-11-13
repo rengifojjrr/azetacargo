@@ -1,0 +1,61 @@
+---
+/** Páginas de texto (Envíos, Nosotros, Contacto, Preguntas, Términos, Privacidad). */
+import Migas from '../componentes/Migas.astro';
+import type { Idioma } from '../lib/catalogo.ts';
+import { ruta, type Pagina } from '../i18n/rutas.ts';
+import { textos } from '../i18n/textos.ts';
+import Base from './Base.astro';
+
+interface Props {
+  idioma: Idioma;
+  pagina: Pagina;
+  titulo: string;
+  descripcion: string;
+  entrada?: string;
+  datos?: object[];
+}
+
+const { idioma, pagina, titulo, descripcion, entrada, datos } = Astro.props;
+const t = textos(idioma);
+---
+
+<Base idioma={idioma} titulo={`${titulo} | Azeta Cargo`} descripcion={descripcion} pagina={pagina} datos={datos}>
+  <div class="contenedor pagina-texto">
+    <Migas etiqueta={t.producto.migas} elementos={[{ texto: t.nav.inicio, href: ruta(idioma, 'inicio') }, { texto: titulo }]} />
+    <header class="pagina-texto__encabezado">
+      <h1>{titulo}</h1>
+      {entrada && <p class="entrada">{entrada}</p>}
+    </header>
+    <div class="pagina-texto__cuerpo">
+      <slot />
+    </div>
+  </div>
+</Base>
+
+<style>
+  .pagina-texto {
+    padding-top: var(--espacio-5);
+  }
+
+  .pagina-texto__encabezado {
+    display: grid;
+    gap: var(--espacio-4);
+    padding: var(--espacio-6) 0 var(--espacio-6);
+    border-bottom: var(--linea);
+    margin-bottom: var(--espacio-6);
+  }
+
+  .pagina-texto__encabezado h1 {
+    font-size: var(--texto-4xl);
+  }
+
+  @media (min-width: 1024px) {
+    .pagina-texto__encabezado h1 {
+      font-size: var(--texto-5xl);
+    }
+
+    .pagina-texto__cuerpo {
+      max-width: calc(8 / 12 * 100%);
+    }
+  }
+</style>

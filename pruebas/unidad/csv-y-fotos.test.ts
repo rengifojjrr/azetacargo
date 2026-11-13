@@ -16,7 +16,7 @@ describe('csv', () => {
   });
 
   it('lee con BOM, comillas, saltos de línea y conserva el número de fila de Excel', () => {
-    const texto = '﻿sku,nombre\nA-1,"Uno, dos"\n,\nA-2,"Línea 1\nLínea 2"\n\nA-3,Tres\n';
+    const texto = '\uFEFFsku,nombre\nA-1,"Uno, dos"\n,\nA-2,"Línea 1\nLínea 2"\n\nA-3,Tres\n';
     const tabla = leerCsv(texto);
     expect(tabla.columnas).toEqual(['sku', 'nombre']);
     expect(tabla.filas.map((f) => [f.numero, f.valores.sku, f.valores.nombre])).toEqual([
@@ -32,7 +32,7 @@ describe('csv', () => {
   });
 
   it('reconoce archivos que no están en UTF-8', () => {
-    expect(pareceMalCodificado('Colch�n')).toBe(true);
+    expect(pareceMalCodificado('Colch\uFFFDn')).toBe(true);
     expect(pareceMalCodificado('Colchón')).toBe(false);
   });
 });

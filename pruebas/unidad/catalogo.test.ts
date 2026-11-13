@@ -53,9 +53,9 @@ describe('catálogo válido', () => {
       fila: 2,
       orden: 0,
     });
-    expect(estacion?.nombre.es).toBe('Estación 1 000 Wh');
+    expect(estacion?.nombre.es).toBe('Estación 1\u00a0000 Wh');
     expect(estacion?.caracteristicas).toEqual([
-      { clave: { es: 'Capacidad', en: 'Capacity' }, valor: { es: '1 000 Wh', en: '1,000 Wh' } },
+      { clave: { es: 'Capacidad', en: 'Capacity' }, valor: { es: '1\u00a0000 Wh', en: '1,000 Wh' } },
     ]);
     expect(colchon).toMatchObject({ precio: 1299, precioOferta: null, disponible: false, destacado: false });
     expect(colchon?.nombre.en).toBe('Colchón');
@@ -119,7 +119,7 @@ describe('errores con fila y campo', () => {
     });
     expect(errores(sinPrecio).map(describirProblema)[0]).toMatch(/fila 1: faltan columnas en el encabezado: precio_usd/);
 
-    const malCodificado = catalogo(['AZ-1,energia,Colch�n,,,10,,sí,,,,,,,']);
+    const malCodificado = catalogo(['AZ-1,energia,Colch\uFFFDn,,,10,,sí,,,,,,,']);
     expect(errores(malCodificado)[0]?.mensaje).toMatch(/UTF-8/);
   });
 

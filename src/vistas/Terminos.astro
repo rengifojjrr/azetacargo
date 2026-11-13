@@ -1,0 +1,149 @@
+---
+/** Términos y condiciones. BORRADOR: debe revisarlo un abogado antes de publicar la versión definitiva. */
+import Icono from '../componentes/Icono.astro';
+import PaginaTexto from '../layouts/PaginaTexto.astro';
+import type { Idioma } from '../lib/catalogo.ts';
+import { ruta } from '../i18n/rutas.ts';
+import { textos } from '../i18n/textos.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+
+const { idioma } = Astro.props;
+const t = textos(idioma);
+const fecha = idioma === 'es' ? '13 de noviembre de 2026' : 'November 13, 2026';
+---
+
+<PaginaTexto idioma={idioma} pagina="terminos" titulo={t.legal.terminos} descripcion={t.legal.terminosDescripcion}>
+  <p class="borrador">
+    <Icono nombre="alerta" tamano={20} />
+    <span><strong>{t.legal.borrador}.</strong> {t.legal.borradorTexto}</span>
+  </p>
+  <p class="actualizado">{t.legal.actualizado}: {fecha}</p>
+
+  {
+    idioma === 'es' ? (
+      <div class="prosa">
+        <h2>1. Quiénes somos</h2>
+        <p>
+          Esta tienda en línea es de Azeta Cargo, con sede en Miami, Florida (EE. UU.). Al usar el sitio aceptas estos
+          términos.
+        </p>
+        <h2>2. Pedidos</h2>
+        <p>
+          Un pedido hecho en este sitio es una solicitud de compra, no una venta cerrada. El pedido queda confirmado
+          cuando Azeta Cargo se comunica contigo y acuerdan el precio final, la disponibilidad, la entrega y la forma de
+          pago.
+        </p>
+        <h2>3. Precios</h2>
+        <p>
+          Los precios están en dólares de EE. UU. (USD) y son de referencia. Pueden cambiar sin aviso y pueden contener
+          errores. El precio final, con impuestos y envío si corresponden, se confirma antes de cobrar.
+        </p>
+        <h2>4. Pago</h2>
+        <p>
+          Por ahora el sitio no recibe pagos en línea. La forma de pago se acuerda al confirmar el pedido. Nunca te
+          pediremos datos de tarjetas por este sitio.
+        </p>
+        <h2>5. Disponibilidad</h2>
+        <p>
+          Los productos están sujetos a disponibilidad. Si un producto se agota después de hacer tu pedido, te avisamos
+          y puedes elegir otro o cancelar.
+        </p>
+        <h2>6. Entregas</h2>
+        <p>
+          Las formas de entrega son recoger en Miami, envío dentro de EE. UU. y envío a Cuba por Azeta Cargo, que se
+          cotiza aparte. Los costos y plazos se confirman con cada pedido. Más detalles en
+          <a href={ruta(idioma, 'envios')}>Envíos</a>.
+        </p>
+        <h2>7. Garantías y devoluciones</h2>
+        <p>
+          La garantía depende de cada producto y de su fabricante. Las condiciones de cambio y devolución se informan al
+          confirmar el pedido. [Pendiente: definir la política de devoluciones.]
+        </p>
+        <h2>8. Responsabilidad</h2>
+        <p>
+          Hacemos lo posible para que la información del sitio sea correcta, pero puede tener errores. Azeta Cargo no se
+          hace responsable por daños indirectos derivados del uso del sitio, en la medida en que la ley lo permita.
+        </p>
+        <h2>9. Cambios a estos términos</h2>
+        <p>Podemos actualizar estos términos. La fecha de arriba indica la última versión.</p>
+        <h2>10. Contacto</h2>
+        <p>
+          Si tienes preguntas sobre estos términos, escríbenos desde la página de
+          <a href={ruta(idioma, 'contacto')}>Contacto</a>.
+        </p>
+      </div>
+    ) : (
+      <div class="prosa">
+        <h2>1. Who we are</h2>
+        <p>
+          This online shop belongs to Azeta Cargo, based in Miami, Florida (USA). By using the site you accept these
+          terms.
+        </p>
+        <h2>2. Orders</h2>
+        <p>
+          An order placed on this site is a purchase request, not a completed sale. The order is confirmed when Azeta
+          Cargo contacts you and you agree on the final price, availability, delivery and payment method.
+        </p>
+        <h2>3. Prices</h2>
+        <p>
+          Prices are in US dollars (USD) and are for reference. They may change without notice and may contain errors.
+          The final price, including taxes and shipping where they apply, is confirmed before charging you.
+        </p>
+        <h2>4. Payment</h2>
+        <p>
+          For now the site does not take online payments. The payment method is agreed when the order is confirmed. We
+          will never ask for card details through this site.
+        </p>
+        <h2>5. Availability</h2>
+        <p>
+          Products are subject to availability. If a product sells out after you place your order, we will let you know
+          and you can choose another one or cancel.
+        </p>
+        <h2>6. Delivery</h2>
+        <p>
+          Delivery options are pickup in Miami, shipping within the U.S., and shipping to Cuba by Azeta Cargo, which is
+          quoted separately. Costs and timing are confirmed with each order. More details under
+          <a href={ruta(idioma, 'envios')}>Shipping</a>.
+        </p>
+        <h2>7. Warranty and returns</h2>
+        <p>
+          Warranty depends on each product and its manufacturer. Exchange and return conditions are shared when the
+          order is confirmed. [Pending: define the return policy.]
+        </p>
+        <h2>8. Liability</h2>
+        <p>
+          We do our best to keep the information on this site accurate, but it may contain errors. To the extent allowed
+          by law, Azeta Cargo is not liable for indirect damages arising from the use of the site.
+        </p>
+        <h2>9. Changes to these terms</h2>
+        <p>We may update these terms. The date above shows the latest version.</p>
+        <h2>10. Contact</h2>
+        <p>
+          If you have questions about these terms, reach us through the <a href={ruta(idioma, 'contacto')}>Contact</a>{' '}
+          page.
+        </p>
+      </div>
+    )
+  }
+</PaginaTexto>
+
+<style>
+  .borrador {
+    display: flex;
+    gap: var(--espacio-3);
+    align-items: flex-start;
+    padding: var(--espacio-4);
+    border-left: 4px solid var(--color-naranja);
+    background: var(--color-fondo-imagen);
+    color: var(--color-tinta);
+  }
+
+  .actualizado {
+    margin: var(--espacio-4) 0 var(--espacio-2);
+    font-size: var(--texto-s);
+    color: var(--color-gris);
+  }
+</style>

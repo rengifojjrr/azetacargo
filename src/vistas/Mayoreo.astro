@@ -1,0 +1,268 @@
+---
+import Icono from '../componentes/Icono.astro';
+import Migas from '../componentes/Migas.astro';
+import PanelEnvio from '../componentes/PanelEnvio.astro';
+import Base from '../layouts/Base.astro';
+import { negocio } from '../config/negocio.ts';
+import type { Idioma } from '../lib/catalogo.ts';
+import type { NombreIcono } from '../lib/iconos.ts';
+import {
+  DESTINOS_COTIZACION,
+  numeroWhatsApp,
+  PLAZOS_COTIZACION,
+  TIPOS_COTIZACION,
+  UNIDADES_COTIZACION,
+} from '../lib/pedido.ts';
+import { jsonSeguro, obtenerCatalogo } from '../lib/sitio.ts';
+import { ruta } from '../i18n/rutas.ts';
+import { textos } from '../i18n/textos.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+
+const { idioma } = Astro.props;
+const t = textos(idioma);
+const m = t.mayoreo;
+const nombres = Object.fromEntries(obtenerCatalogo().productos.map((p) => [p.sku, p.nombre[idioma]]));
+---
+
+<Base idioma={idioma} titulo={`${m.titulo} | Azeta Cargo`} descripcion={m.descripcion} pagina="mayoreo">
+  <div
+    class="contenedor mayoreo"
+    data-pagina-mayoreo
+    data-whatsapp={numeroWhatsApp(negocio.whatsapp) ?? ''}
+    data-correo={negocio.correo}
+  >
+    <Migas etiqueta={t.producto.migas} elementos={[{ texto: t.nav.inicio, href: ruta(idioma, 'inicio') }, { texto: m.titulo }]} />
+
+    <header class="mayoreo__encabezado">
+      <h1>{m.h1}</h1>
+      <p class="entrada">{m.entrada}</p>
+    </header>
+
+    <ul class="celdas mayoreo__servicios" role="list">
+      {
+        t.servicios.map((s) => (
+          <li>
+            <Icono nombre={s.icono as NombreIcono} tamano={28} />
+            <span class="mayoreo__servicio">{s.titulo}</span>
+            <span class="mayoreo__detalle">{s.texto}</span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <section class="mayoreo__formulario" aria-labelledby="titulo-cotizacion" data-seccion-cotizacion>
+      <h2 id="titulo-cotizacion" tabindex="-1">{m.formulario}</h2>
+      <form class="formulario formulario--doble" data-formulario-cotizacion novalidate>
+        <p class="formulario__aviso ancho-completo" role="alert" data-aviso-formulario></p>
+
+        <div class="campo ancho-completo">
+          <label class="campo__etiqueta" for="cot-tipo">{m.tipo}</label>
+          <div class="desplegable">
+            <select class="control" id="cot-tipo" name="tipo" required aria-describedby="error-tipo">
+              <option value="">{m.elegir}</option>
+              {TIPOS_COTIZACION.map((tipo) => <option value={tipo}>{m.tipos[tipo]}</option>)}
+            </select>
+            <Icono nombre="chevron-abajo" tamano={18} />
+          </div>
+          <p class="campo__error" id="error-tipo" data-error="tipo"></p>
+        </div>
+
+        <div class="campo ancho-completo">
+          <label class="campo__etiqueta" for="cot-descripcion">{m.descripcionCampo}</label>
+          <textarea
+            class="control"
+            id="cot-descripcion"
+            name="descripcion"
+            rows="4"
+            maxlength="1000"
+            required
+            aria-describedby="ayuda-descripcion error-descripcion"></textarea>
+          <p class="campo__ayuda" id="ayuda-descripcion">{m.descripcionAyuda}</p>
+          <p class="campo__error" id="error-descripcion" data-error="descripcion"></p>
+        </div>
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="cot-cantidad">{m.cantidad}</label>
+          <input class="control" id="cot-cantidad" name="cantidad" inputmode="numeric" maxlength="40" required aria-describedby="error-cantidad" />
+          <p class="campo__error" id="error-cantidad" data-error="cantidad"></p>
+        </div>
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="cot-unidad">{m.unidad}</label>
+          <div class="desplegable">
+            <select class="control" id="cot-unidad" name="unidad">
+              {UNIDADES_COTIZACION.map((u) => <option value={u}>{m.unidades[u]}</option>)}
+            </select>
+            <Icono nombre="chevron-abajo" tamano={18} />
+          </div>
+        </div>
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="cot-destino">{m.destino}</label>
+          <div class="desplegable">
+            <select class="control" id="cot-destino" name="destino" required aria-describedby="error-destino">
+              <option value="">{m.elegir}</option>
+              {DESTINOS_COTIZACION.map((d) => <option value={d}>{m.destinos[d]}</option>)}
+            </select>
+            <Icono nombre="chevron-abajo" tamano={18} />
+          </div>
+          <p class="campo__error" id="error-destino" data-error="destino"></p>
+        </div>
+
+        <div class="campo" data-campo-ciudad>
+          <label class="campo__etiqueta" for="cot-ciudad" data-etiqueta-ciudad>{m.ciudad}</label>
+          <input class="control" id="cot-ciudad" name="ciudad" maxlength="120" aria-describedby="error-ciudad" />
+          <p class="campo__error" id="error-ciudad" data-error="ciudad"></p>
+        </div>
+
+        <div class="campo ancho-completo">
+          <label class="campo__etiqueta" for="cot-plazo">{m.plazo}</label>
+          <div class="desplegable">
+            <select class="control" id="cot-plazo" name="plazo" required aria-describedby="error-plazo">
+              <option value="">{m.elegir}</option>
+              {PLAZOS_COTIZACION.map((p) => <option value={p}>{m.plazos[p]}</option>)}
+            </select>
+            <Icono nombre="chevron-abajo" tamano={18} />
+          </div>
+          <p class="campo__error" id="error-plazo" data-error="plazo"></p>
+        </div>
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="cot-nombre">{t.formulario.nombre}</label>
+          <input class="control" id="cot-nombre" name="nombre" autocomplete="name" required aria-describedby="error-nombre" />
+          <p class="campo__error" id="error-nombre" data-error="nombre"></p>
+        </div>
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="cot-empresa">
+            {t.formulario.empresa} <span class="campo__opcional">({t.formulario.opcional})</span>
+          </label>
+          <input class="control" id="cot-empresa" name="empresa" autocomplete="organization" />
+        </div>
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="cot-telefono">{t.formulario.telefono}</label>
+          <input
+            class="control"
+            id="cot-telefono"
+            name="telefono"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            required
+            aria-describedby="ayuda-cot-telefono error-telefono"
+          />
+          <p class="campo__ayuda" id="ayuda-cot-telefono">{t.formulario.telefonoAyuda}</p>
+          <p class="campo__error" id="error-telefono" data-error="telefono"></p>
+        </div>
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="cot-correo">
+            {t.formulario.correo} <span class="campo__opcional">({t.formulario.opcional})</span>
+          </label>
+          <input class="control" id="cot-correo" name="correo" type="email" autocomplete="email" aria-describedby="error-correo" />
+          <p class="campo__error" id="error-correo" data-error="correo"></p>
+        </div>
+
+        <div class="campo ancho-completo">
+          <label class="campo__etiqueta" for="cot-nota">
+            {t.formulario.nota} <span class="campo__opcional">({t.formulario.opcional})</span>
+          </label>
+          <textarea class="control" id="cot-nota" name="nota" rows="3" maxlength="600"></textarea>
+        </div>
+
+        <div class="ancho-completo">
+          <button class="boton boton--primario" type="submit">{m.confirmar}</button>
+        </div>
+      </form>
+    </section>
+
+    <PanelEnvio idioma={idioma} id="solicitud" resumen={m.resumen} copiar={m.copiar}>
+      <div class="confirmacion__mas">
+        <button class="boton" type="button" data-nueva-solicitud>{m.nueva}</button>
+      </div>
+    </PanelEnvio>
+  </div>
+  <script type="application/json" id="nombres-productos" set:html={jsonSeguro(nombres)} />
+</Base>
+
+<style>
+  .mayoreo {
+    padding-top: var(--espacio-5);
+    display: grid;
+    gap: var(--espacio-7);
+  }
+
+  .mayoreo__encabezado {
+    display: grid;
+    gap: var(--espacio-4);
+    padding-top: var(--espacio-5);
+  }
+
+  .mayoreo__encabezado h1 {
+    font-size: var(--texto-4xl);
+  }
+
+  .mayoreo__servicios {
+    --columnas: 2;
+  }
+
+  .mayoreo__servicios li {
+    display: grid;
+    align-content: start;
+    gap: var(--espacio-2);
+    padding: var(--espacio-4);
+    color: var(--color-marino);
+  }
+
+  .mayoreo__servicio {
+    margin-top: var(--espacio-2);
+    font-family: var(--fuente-titulos);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .mayoreo__detalle {
+    font-size: var(--texto-s);
+    color: var(--color-gris);
+  }
+
+  .mayoreo__formulario {
+    display: grid;
+    gap: var(--espacio-5);
+    padding-top: var(--espacio-6);
+    border-top: 2px solid var(--color-marino);
+  }
+
+  .mayoreo__formulario h2:focus {
+    outline: none;
+  }
+
+  .confirmacion__mas {
+    padding-top: var(--espacio-4);
+    border-top: var(--linea);
+  }
+
+  @media (min-width: 1024px) {
+    .mayoreo__encabezado h1 {
+      font-size: var(--texto-5xl);
+    }
+
+    .mayoreo__servicios {
+      --columnas: 4;
+    }
+
+    .mayoreo__formulario,
+    .mayoreo :global(#solicitud) {
+      max-width: calc(8 / 12 * 100%);
+    }
+  }
+</style>
+
+<script>
+  import '../cliente/mayoreo.ts';
+</script>

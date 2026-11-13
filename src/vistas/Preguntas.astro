@@ -1,0 +1,99 @@
+---
+import Icono from '../componentes/Icono.astro';
+import PaginaTexto from '../layouts/PaginaTexto.astro';
+import type { Idioma } from '../lib/catalogo.ts';
+import { textos } from '../i18n/textos.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+
+const { idioma } = Astro.props;
+const t = textos(idioma);
+const datos = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: t.preguntas.lista.map((q) => ({
+      '@type': 'Question',
+      name: q.p,
+      acceptedAnswer: { '@type': 'Answer', text: q.r },
+    })),
+  },
+];
+---
+
+<PaginaTexto
+  idioma={idioma}
+  pagina="preguntas"
+  titulo={t.preguntas.titulo}
+  descripcion={t.preguntas.descripcion}
+  datos={datos}
+>
+  <div class="preguntas">
+    {
+      t.preguntas.lista.map((q, i) => (
+        <details class="pregunta" open={i === 0}>
+          <summary>
+            <h2 class="pregunta__titulo">{q.p}</h2>
+            <Icono nombre="chevron-abajo" tamano={20} class="pregunta__icono" />
+          </summary>
+          <p class="pregunta__respuesta">{q.r}</p>
+        </details>
+      ))
+    }
+  </div>
+</PaginaTexto>
+
+<style>
+  .preguntas {
+    border-top: var(--linea);
+  }
+
+  .pregunta {
+    border-bottom: var(--linea);
+  }
+
+  .pregunta summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--espacio-4);
+    padding: var(--espacio-4) 0;
+    cursor: pointer;
+    list-style: none;
+    color: var(--color-marino);
+  }
+
+  .pregunta summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .pregunta summary:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .pregunta__titulo {
+    font-family: var(--fuente-texto);
+    font-size: var(--texto-l);
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+    line-height: 1.35;
+    color: var(--color-tinta);
+  }
+
+  .pregunta :global(.pregunta__icono) {
+    flex: none;
+    transition: transform var(--duracion);
+  }
+
+  .pregunta[open] :global(.pregunta__icono) {
+    transform: rotate(180deg);
+  }
+
+  .pregunta__respuesta {
+    max-width: 65ch;
+    padding-bottom: var(--espacio-5);
+  }
+</style>

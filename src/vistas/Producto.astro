@@ -1,0 +1,600 @@
+---
+import Icono from '../componentes/Icono.astro';
+import ImagenProducto from '../componentes/ImagenProducto.astro';
+import Migas from '../componentes/Migas.astro';
+import Precio from '../componentes/Precio.astro';
+import TarjetaProducto from '../componentes/TarjetaProducto.astro';
+import Base from '../layouts/Base.astro';
+import type { Idioma, Producto } from '../lib/catalogo.ts';
+import { imagenesDe, obtenerCatalogo } from '../lib/sitio.ts';
+import { recortar } from '../lib/texto.ts';
+import { ruta } from '../i18n/rutas.ts';
+import { textos } from '../i18n/textos.ts';
+
+interface Props {
+  idioma: Idioma;
+  producto: Producto;
+}
+
+const { idioma, producto: p } = Astro.props;
+const t = textos(idioma);
+const catalogo = obtenerCatalogo();
+const categoria = catalogo.categorias.find((c) => c.id === p.categoria);
+const imagenes = imagenesDe(p);
+const nombre = p.nombre[idioma];
+const descripcion = p.descripcion[idioma];
+const relacionados = catalogo.productos
+  .filter((x) => x.categoria === p.categoria && x.sku !== p.sku && x.disponible)
+  .slice(0, 4);
+
+const sitio = Astro.site ?? new URL('https://azetacargo.com');
+const absoluta = (camino: string) => new URL(camino, sitio).href;
+const url = absoluta(ruta(idioma, 'producto', p.slug));
+const fotosReales = imagenes.filter((i) => i.tipo === 'foto').map((i) => absoluta(i.src));
+
+const datos = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: nombre,
+    sku: p.sku,
+    ...(descripcion ? { description: descripcion } : {}),
+    ...(p.marca ? { brand: { '@type': 'Brand', name: p.marca } } : {}),
+    ...(categoria ? { category: categoria.nombre[idioma] } : {}),
+    ...(fotosReales.length > 0 ? { image: fotosReales } : {}),
+    url,
+    offers: {
+      '@type': 'Offer',
+      url,
+      price: p.precioFinal.toFixed(2),
+      priceCurrency: 'USD',
+      availability: p.disponible ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      seller: { '@type': 'Organization', name: 'Azeta Cargo' },
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { name: t.nav.inicio, item: absoluta(ruta(idioma, 'inicio')) },
+      { name: t.nav.tienda, item: absoluta(ruta(idioma, 'tienda')) },
+      ...(categoria ? [{ name: categoria.nombre[idioma], item: absoluta(ruta(idioma, 'categoria', categoria.id)) }] : []),
+      { name: nombre, item: url },
+    ].map((e, i) => ({ '@type': 'ListItem', position: i + 1, ...e })),
+  },
+];
+
+const migas = [
+  { texto: t.nav.inicio, href: ruta(idioma, 'inicio') },
+  { texto: t.nav.tienda, href: ruta(idioma, 'tienda') },
+  ...(categoria ? [{ texto: categoria.nombre[idioma], href: ruta(idioma, 'categoria', categoria.id) }] : []),
+  { texto: nombre },
+];
+const entregas = [
+  { icono: 'tienda', texto: t.entrega.recoger, detalle: t.entrega.detalles.recoger },
+  { icono: 'camion', texto: t.entrega.eeuu, detalle: t.entrega.detalles.eeuu },
+  { icono: 'caja', texto: t.entrega.cuba, detalle: '' },
+] as const;
+---
+
+<Base
+  idioma={idioma}
+  titulo={`${nombre} | Azeta Cargo`}
+  descripcion={recortar(descripcion || `${nombre}. ${t.producto.notaPrecio}`, 158)}
+  pagina="producto"
+  parametro={p.slug}
+  categoriaActiva={p.categoria}
+  imagen={imagenes[0]?.tipo === 'foto' ? imagenes[0].src : undefined}
+  tipo="product"
+  datos={datos}
+>
+  <div class="contenedor ficha">
+    <Migas etiqueta={t.producto.migas} elementos={migas} />
+
+    <div class="ficha__principal">
+      <div class="galeria" data-galeria>
+        <div class="galeria__marco">
+          {
+            imagenes.map((imagen, i) => (
+              <div class="galeria__foto" data-foto={i} hidden={i > 0}>
+                <ImagenProducto
+                  imagen={imagen}
+                  alt={imagenes.length > 1 ? `${nombre} (${i + 1}/${imagenes.length})` : nombre}
+                  prioridad={i === 0}
+                  tamanos="(min-width: 1024px) 680px, 100vw"
+                />
+              </div>
+            ))
+          }
+          {
+            (p.nuevo || p.precioOferta !== null) && (
+              <p class="galeria__insignias">
+                {p.nuevo && <span class="insignia">{t.tarjeta.nuevo}</span>}
+                {p.precioOferta !== null && <span class="insignia">{t.tarjeta.oferta}</span>}
+              </p>
+            )
+          }
+        </div>
+        {
+          imagenes.length > 1 && (
+            <ul class="galeria__miniaturas" role="list" aria-label={t.producto.fotos}>
+              {imagenes.map((imagen, i) => (
+                <li>
+                  <button
+                    type="button"
+                    class="galeria__miniatura"
+                    data-ver-foto={i}
+                    aria-label={t.producto.verFoto(i + 1)}
+                    aria-pressed={i === 0 ? 'true' : 'false'}
+                  >
+                    <img src={imagen.src} alt="" width="80" height="60" loading="lazy" decoding="async" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+
+      <div class="ficha__datos">
+        {
+          categoria && (
+            <p class="rotulo ficha__categoria">
+              <a href={ruta(idioma, 'categoria', categoria.id)}>{categoria.nombre[idioma]}</a>
+            </p>
+          )
+        }
+        <h1 class="ficha__nombre">{nombre}</h1>
+        <dl class="ficha__codigos">
+          <div>
+            <dt>{t.producto.sku}</dt>
+            <dd class="sku">{p.sku}</dd>
+          </div>
+          {
+            p.marca && (
+              <div>
+                <dt>{t.producto.marca}</dt>
+                <dd>{p.marca}</dd>
+              </div>
+            )
+          }
+        </dl>
+
+        <div class="ficha__precio">
+          <Precio producto={p} idioma={idioma} grande />
+          <p class:list={['ficha__disponibilidad', { 'ficha__disponibilidad--agotado': !p.disponible }]}>
+            <Icono nombre={p.disponible ? 'check' : 'alerta'} tamano={18} />
+            {p.disponible ? t.producto.disponible : t.producto.agotado}
+          </p>
+        </div>
+
+        {
+          p.disponible && (
+            <div class="ficha__compra">
+              <div class="cantidad">
+                <label class="campo__etiqueta" for="cantidad">
+                  {t.producto.cantidad}
+                </label>
+                <div class="cantidad__control" data-cantidad-control>
+                  <button class="boton-icono cantidad__boton" type="button" data-restar aria-label={t.producto.restar}>
+                    <Icono nombre="menos" tamano={18} />
+                  </button>
+                  <input
+                    class="cantidad__campo"
+                    id="cantidad"
+                    type="number"
+                    inputmode="numeric"
+                    min="1"
+                    max="99"
+                    step="1"
+                    value="1"
+                  />
+                  <button class="boton-icono cantidad__boton" type="button" data-sumar aria-label={t.producto.sumar}>
+                    <Icono nombre="mas" tamano={18} />
+                  </button>
+                </div>
+              </div>
+              <button
+                class="boton boton--primario ficha__agregar"
+                type="button"
+                data-agregar={p.sku}
+                data-nombre={nombre}
+                data-cantidad="#cantidad"
+              >
+                <Icono nombre="carrito" tamano={20} />
+                {t.producto.agregar}
+              </button>
+            </div>
+          )
+        }
+
+        <p class="ficha__nota">{t.producto.notaPrecio}</p>
+        {
+          p.ejemplo && (
+            <p class="nota-prueba">
+              <Icono nombre="info" tamano={18} />
+              <span>{t.producto.ejemplo}</span>
+            </p>
+          )
+        }
+
+        <section class="ficha__entrega" aria-labelledby="titulo-entrega">
+          <h2 class="rotulo ficha__subtitulo" id="titulo-entrega">{t.producto.entrega}</h2>
+          <ul role="list" class="entregas">
+            {
+              entregas.map((e) => (
+                <li>
+                  <Icono nombre={e.icono} tamano={22} />
+                  <span>
+                    <span class="entregas__texto">{e.texto}</span>
+                    {e.detalle && <span class="entregas__detalle">{e.detalle}</span>}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <p class="ficha__mayoreo">
+          {t.producto.mayoreo}
+          <a class="enlace" href={`${ruta(idioma, 'mayoreo')}?sku=${encodeURIComponent(p.sku)}`}>{t.producto.mayoreoEnlace}</a>
+        </p>
+      </div>
+    </div>
+
+    {
+      (descripcion || p.caracteristicas.length > 0) && (
+        <div class="ficha__detalle">
+          {descripcion && (
+            <section class="ficha__seccion" aria-labelledby="titulo-descripcion">
+              <h2 id="titulo-descripcion">{t.producto.descripcion}</h2>
+              <p class="ficha__descripcion">{descripcion}</p>
+            </section>
+          )}
+          {p.caracteristicas.length > 0 && (
+            <section class="ficha__seccion" aria-labelledby="titulo-caracteristicas">
+              <h2 id="titulo-caracteristicas">{t.producto.caracteristicas}</h2>
+              <table class="tabla">
+                <tbody>
+                  {p.caracteristicas.map((c) => (
+                    <tr>
+                      <th scope="row">{c.clave[idioma]}</th>
+                      <td>{c.valor[idioma]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          )}
+        </div>
+      )
+    }
+
+    {
+      relacionados.length > 0 && (
+        <section class="ficha__relacionados" aria-labelledby="titulo-relacionados">
+          <div class="encabezado-seccion">
+            <h2 id="titulo-relacionados">{t.producto.relacionados}</h2>
+          </div>
+          <ul class="celdas" role="list">
+            {relacionados.map((r) => (
+              <li>
+                <TarjetaProducto producto={r} idioma={idioma} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .ficha {
+    padding-top: var(--espacio-5);
+  }
+
+  .ficha__principal {
+    display: grid;
+    gap: var(--espacio-6);
+    margin-top: var(--espacio-5);
+  }
+
+  .galeria__marco {
+    position: relative;
+    border: var(--linea);
+  }
+
+  .galeria__foto[hidden] {
+    display: none;
+  }
+
+  .galeria__insignias {
+    position: absolute;
+    top: var(--espacio-4);
+    left: var(--espacio-4);
+    display: flex;
+    gap: var(--espacio-1);
+  }
+
+  .galeria__miniaturas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-2);
+    margin: var(--espacio-3) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .galeria__miniatura {
+    padding: 0;
+    border: 1px solid var(--color-linea);
+    background: var(--color-fondo-imagen);
+  }
+
+  .galeria__miniatura[aria-pressed='true'] {
+    border-color: var(--color-marino);
+    box-shadow: inset 0 -3px 0 var(--color-naranja);
+  }
+
+  .galeria__miniatura img {
+    width: 5rem;
+    height: 3.75rem;
+    object-fit: contain;
+  }
+
+  .ficha__datos {
+    display: grid;
+    gap: var(--espacio-4);
+    align-content: start;
+  }
+
+  .ficha__categoria a {
+    color: var(--color-gris);
+    text-decoration: none;
+  }
+
+  .ficha__categoria a:hover {
+    text-decoration: underline;
+  }
+
+  .ficha__nombre {
+    font-size: var(--texto-3xl);
+    line-height: 1.08;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .ficha__codigos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-2) var(--espacio-6);
+    margin: 0;
+    font-size: var(--texto-s);
+  }
+
+  .ficha__codigos div {
+    display: flex;
+    gap: var(--espacio-2);
+    align-items: baseline;
+  }
+
+  .ficha__codigos dt {
+    font-family: var(--fuente-titulos);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: var(--texto-xs);
+    color: var(--color-gris);
+  }
+
+  .ficha__codigos dd {
+    margin: 0;
+  }
+
+  .ficha__precio {
+    display: grid;
+    gap: var(--espacio-2);
+    padding: var(--espacio-4) 0;
+    border-top: var(--linea);
+    border-bottom: var(--linea);
+  }
+
+  .ficha__disponibilidad {
+    display: flex;
+    gap: var(--espacio-2);
+    align-items: center;
+    font-weight: 500;
+    color: var(--color-marino);
+  }
+
+  .ficha__disponibilidad--agotado {
+    color: var(--color-gris);
+  }
+
+  .ficha__compra {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--espacio-3);
+    align-items: end;
+  }
+
+  .cantidad {
+    display: grid;
+    gap: var(--espacio-2);
+  }
+
+  .cantidad__control {
+    display: flex;
+    border: 1px solid var(--color-borde-campo);
+    border-radius: var(--radio-campo);
+  }
+
+  .cantidad__boton {
+    color: var(--color-marino);
+  }
+
+  .cantidad__campo {
+    width: 3.5rem;
+    min-height: var(--alto-control);
+    border: 0;
+    border-left: var(--linea);
+    border-right: var(--linea);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  .cantidad__campo::-webkit-outer-spin-button,
+  .cantidad__campo::-webkit-inner-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+
+  .cantidad__campo:focus-visible {
+    outline: 2px solid var(--color-foco);
+    outline-offset: -2px;
+  }
+
+  .ficha__agregar {
+    min-height: calc(var(--alto-control) + 2px);
+  }
+
+  .ficha__nota {
+    font-size: var(--texto-s);
+    color: var(--color-gris);
+  }
+
+  .ficha__subtitulo {
+    margin-bottom: var(--espacio-2);
+    color: var(--color-marino);
+  }
+
+  .entregas {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: var(--linea);
+  }
+
+  .entregas li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--espacio-3);
+    padding: var(--espacio-3) 0;
+    border-bottom: var(--linea);
+    color: var(--color-marino);
+  }
+
+  .entregas__texto {
+    display: block;
+    font-weight: 500;
+    color: var(--color-tinta);
+  }
+
+  .entregas__detalle {
+    display: block;
+    font-size: var(--texto-s);
+    color: var(--color-gris);
+  }
+
+  .ficha__mayoreo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-1) var(--espacio-2);
+    font-size: var(--texto-s);
+  }
+
+  .ficha__detalle {
+    display: grid;
+    gap: var(--espacio-7);
+    margin-top: var(--espacio-seccion);
+    padding-top: var(--espacio-6);
+    border-top: var(--linea);
+  }
+
+  .ficha__seccion h2 {
+    margin-bottom: var(--espacio-4);
+    font-size: var(--texto-l);
+  }
+
+  .ficha__descripcion {
+    max-width: 65ch;
+    font-size: var(--texto-l);
+    line-height: 1.6;
+  }
+
+  .tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--texto-s);
+  }
+
+  .tabla th,
+  .tabla td {
+    padding: var(--espacio-3) var(--espacio-3) var(--espacio-3) 0;
+    border-bottom: var(--linea);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .tabla tr:first-child th,
+  .tabla tr:first-child td {
+    border-top: var(--linea);
+  }
+
+  .tabla th {
+    width: 42%;
+    font-weight: 500;
+    color: var(--color-gris);
+  }
+
+  .tabla td {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ficha__relacionados {
+    margin-top: var(--espacio-seccion);
+  }
+
+  @media (min-width: 1024px) {
+    .ficha__principal {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--separacion);
+    }
+
+    .galeria {
+      grid-column: 1 / span 7;
+    }
+
+    .ficha__datos {
+      grid-column: 9 / span 4;
+    }
+
+    .ficha__nombre {
+      font-size: var(--texto-4xl);
+    }
+
+    .ficha__detalle {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--separacion);
+    }
+
+    .ficha__detalle > :first-child {
+      grid-column: 1 / span 6;
+    }
+
+    .ficha__detalle > :last-child {
+      grid-column: 8 / span 5;
+    }
+
+    .ficha__detalle > :only-child {
+      grid-column: 1 / span 8;
+    }
+  }
+</style>
+
+<script>
+  import '../cliente/producto.ts';
+</script>

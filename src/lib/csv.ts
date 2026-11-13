@@ -25,9 +25,9 @@ export function normalizarColumna(nombre: string): string {
   return normalizar(nombre).replace(/ /g, '_');
 }
 
-/** El texto tiene caracteres «�»: el archivo no se guardó en UTF-8. */
+/** El texto tiene caracteres «\uFFFD»: el archivo no se guardó en UTF-8. */
 export function pareceMalCodificado(texto: string): boolean {
-  return texto.includes('�');
+  return texto.includes('\uFFFD');
 }
 
 /**
@@ -35,7 +35,7 @@ export function pareceMalCodificado(texto: string): boolean {
  * de fila siguen siendo los de Excel para que los mensajes de error apunten a la fila correcta.
  */
 export function leerCsv(texto: string): TablaCsv {
-  const limpio = texto.replace(/^﻿/, '');
+  const limpio = texto.replace(/^\uFEFF/, '');
   const registros = parse(limpio, {
     delimiter: detectarSeparador(limpio),
     relax_column_count: true,

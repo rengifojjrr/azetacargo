@@ -29,7 +29,7 @@ export function palabrasDeBusqueda(consulta: string): string[] {
 
 /** Evita que «1 000 Wh» se parta en dos líneas: el espacio de miles pasa a ser no separable. */
 export function unirMiles(texto: string): string {
-  return texto.replace(/(\d)[   ](?=\d{3}(?!\d))/g, '$1 ');
+  return texto.replace(/(\d)[ \u00a0\u202f](?=\d{3}(?!\d))/g, '$1\u00a0');
 }
 
 /**
@@ -38,7 +38,7 @@ export function unirMiles(texto: string): string {
  */
 export function numerosEnIngles(texto: string): string {
   const conPunto = texto.replace(/(\d),(\d)/g, '$1.$2');
-  return conPunto.replace(/(\d)[   ](?=\d{3}(?!\d))/g, '$1,');
+  return conPunto.replace(/(\d)[ \u00a0\u202f](?=\d{3}(?!\d))/g, '$1,');
 }
 
 /** «Hola mundo» → «hola-mundo», para identificadores. */

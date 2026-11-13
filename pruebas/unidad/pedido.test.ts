@@ -68,8 +68,8 @@ describe('validación del pedido', () => {
 
 describe('mensaje del pedido', () => {
   const lineas = [
-    { cantidad: 2, nombre: 'Estación de energía portátil 1 000 Wh', sku: 'AZ-ENE-001', precioUnitario: 599, total: 1198 },
-    { cantidad: 1, nombre: 'Power bank 20 000 mAh con USB-C', sku: 'AZ-ENE-005', precioUnitario: 39.99, total: 39.99 },
+    { cantidad: 2, nombre: 'Estación de energía portátil 1\u00a0000 Wh', sku: 'AZ-ENE-001', precioUnitario: 599, total: 1198 },
+    { cantidad: 1, nombre: 'Power bank 20\u00a0000 mAh con USB-C', sku: 'AZ-ENE-005', precioUnitario: 39.99, total: 39.99 },
   ];
 
   it('arma el texto en español con productos, subtotal y datos', () => {
@@ -79,9 +79,9 @@ describe('mensaje del pedido', () => {
         'Hola, Azeta Cargo. Quiero hacer este pedido:',
         '',
         '*Pedido 20261113-KQTZ*',
-        '• Estación de energía portátil 1 000 Wh (AZ-ENE-001)',
+        '• Estación de energía portátil 1\u00a0000 Wh (AZ-ENE-001)',
         '  2 × $599.00 = $1,198.00',
-        '• Power bank 20 000 mAh con USB-C (AZ-ENE-005)',
+        '• Power bank 20\u00a0000 mAh con USB-C (AZ-ENE-005)',
         '  1 × $39.99 = $39.99',
         '',
         '*Subtotal estimado: $1,237.99*',

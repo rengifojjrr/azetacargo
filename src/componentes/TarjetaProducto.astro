@@ -1,0 +1,168 @@
+---
+/**
+ * Tarjeta de producto: imagen 4:3, categoría, nombre, SKU, precio y botón «Agregar» a todo el ancho.
+ * Toda la tarjeta lleva a la ficha; el botón agrega al carrito sin salir de la página.
+ * Los atributos data-* los usan los filtros del catálogo.
+ */
+import type { Idioma, Producto } from '../lib/catalogo.ts';
+import { imagenesDe, obtenerCatalogo } from '../lib/sitio.ts';
+import { ruta } from '../i18n/rutas.ts';
+import { textos } from '../i18n/textos.ts';
+import ImagenProducto from './ImagenProducto.astro';
+import Precio from './Precio.astro';
+
+interface Props {
+  producto: Producto;
+  idioma: Idioma;
+  nivelTitulo?: 2 | 3;
+  prioridad?: boolean;
+}
+
+const { producto, idioma, nivelTitulo = 3, prioridad = false } = Astro.props;
+const t = textos(idioma);
+const categoria = obtenerCatalogo().categorias.find((c) => c.id === producto.categoria);
+const [imagen] = imagenesDe(producto);
+const Titulo = nivelTitulo === 2 ? 'h2' : 'h3';
+const nombre = producto.nombre[idioma];
+---
+
+<article
+  class:list={['tarjeta', { 'tarjeta--agotada': !producto.disponible }]}
+  data-producto
+  data-sku={producto.sku}
+  data-marca={producto.marca}
+  data-precio={producto.precioFinal}
+  data-disponible={producto.disponible ? '1' : '0'}
+  data-nuevo={producto.nuevo ? '1' : '0'}
+  data-destacado={producto.destacado ? '1' : '0'}
+  data-orden={producto.orden}
+>
+  {imagen && <ImagenProducto imagen={imagen} alt={nombre} prioridad={prioridad} />}
+  {
+    (producto.nuevo || producto.precioOferta !== null || !producto.disponible) && (
+      <p class="tarjeta__insignias">
+        {producto.nuevo && <span class="insignia">{t.tarjeta.nuevo}</span>}
+        {producto.precioOferta !== null && <span class="insignia">{t.tarjeta.oferta}</span>}
+        {!producto.disponible && <span class="insignia insignia--neutra">{t.tarjeta.agotado}</span>}
+      </p>
+    )
+  }
+  <div class="tarjeta__cuerpo">
+    {categoria && <p class="rotulo">{categoria.nombre[idioma]}</p>}
+    <Titulo class="tarjeta__nombre">
+      <a href={ruta(idioma, 'producto', producto.slug)}>{nombre}</a>
+    </Titulo>
+    <p class="sku">{producto.sku}</p>
+    <div class="tarjeta__pie">
+      <Precio producto={producto} idioma={idioma} />
+      {
+        producto.disponible ? (
+          <button
+            class="boton boton--primario boton--bloque tarjeta__boton"
+            type="button"
+            data-agregar={producto.sku}
+            data-nombre={nombre}
+            aria-label={t.tarjeta.agregarA11y(nombre)}
+          >
+            {t.tarjeta.agregar}
+          </button>
+        ) : (
+          <button class="boton boton--bloque tarjeta__boton" type="button" disabled>
+            {t.tarjeta.agotado}
+          </button>
+        )
+      }
+    </div>
+  </div>
+</article>
+
+<style>
+  .tarjeta {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--color-blanco);
+  }
+
+  .tarjeta:has(.tarjeta__nombre a:focus-visible) {
+    outline: 2px solid var(--color-marino);
+    outline-offset: -2px;
+  }
+
+  .tarjeta__insignias {
+    position: absolute;
+    top: var(--espacio-3);
+    left: var(--espacio-3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-1);
+  }
+
+  .tarjeta__cuerpo {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--espacio-1);
+    padding: var(--espacio-3) var(--espacio-3) var(--espacio-4);
+    border-top: var(--linea);
+  }
+
+  .tarjeta__cuerpo .rotulo {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .tarjeta__nombre {
+    font-size: var(--texto-s);
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--color-tinta);
+  }
+
+  .tarjeta__nombre a {
+    text-decoration: none;
+  }
+
+  .tarjeta__nombre a:focus-visible {
+    outline: none;
+  }
+
+  /* Toda la tarjeta es el enlace a la ficha */
+  .tarjeta__nombre a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .tarjeta:hover .tarjeta__nombre a {
+    text-decoration: underline;
+  }
+
+  .tarjeta__pie {
+    display: grid;
+    gap: var(--espacio-3);
+    margin-top: auto;
+    padding-top: var(--espacio-3);
+  }
+
+  .tarjeta__boton {
+    position: relative;
+    z-index: 1;
+  }
+
+  .tarjeta--agotada :global(.imagen-producto) {
+    opacity: 0.6;
+  }
+
+  @media (min-width: 768px) {
+    .tarjeta__cuerpo {
+      padding: var(--espacio-4) var(--espacio-4) var(--espacio-5);
+    }
+
+    .tarjeta__nombre {
+      font-size: var(--texto-m);
+    }
+  }
+</style>

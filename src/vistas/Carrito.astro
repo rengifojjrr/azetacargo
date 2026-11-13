@@ -1,0 +1,479 @@
+---
+import Icono from '../componentes/Icono.astro';
+import PanelEnvio from '../componentes/PanelEnvio.astro';
+import Base from '../layouts/Base.astro';
+import { negocio } from '../config/negocio.ts';
+import type { Idioma } from '../lib/catalogo.ts';
+import { FORMAS_ENTREGA, numeroWhatsApp } from '../lib/pedido.ts';
+import { imagenesDe, jsonSeguro, obtenerCatalogo } from '../lib/sitio.ts';
+import { ruta } from '../i18n/rutas.ts';
+import { textos } from '../i18n/textos.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+
+const { idioma } = Astro.props;
+const t = textos(idioma);
+const { productos } = obtenerCatalogo();
+const datos = Object.fromEntries(
+  productos.map((p) => [
+    p.sku,
+    {
+      n: p.nombre[idioma],
+      u: ruta(idioma, 'producto', p.slug),
+      pf: p.precioFinal,
+      pn: p.precio,
+      d: p.disponible,
+      i: imagenesDe(p)[0]?.src ?? '',
+    },
+  ]),
+);
+const iconosEntrega = { recoger: 'tienda', eeuu: 'camion', cuba: 'caja' } as const;
+---
+
+<Base idioma={idioma} titulo={`${t.carrito.titulo} | Azeta Cargo`} descripcion={t.carrito.descripcion} pagina="carrito" indexable={false}>
+  <div
+    class="contenedor carrito"
+    data-pagina-carrito
+    data-whatsapp={numeroWhatsApp(negocio.whatsapp) ?? ''}
+    data-correo={negocio.correo}
+  >
+    <h1 class="carrito__titulo" tabindex="-1" data-titulo-carrito>{t.carrito.titulo}</h1>
+
+    <noscript><p class="carrito__aviso">{t.carrito.sinJs}</p></noscript>
+    <p class="carrito__aviso" data-cargando>{t.carrito.cargando}</p>
+
+    <div class="carrito__vacio" data-vacio hidden>
+      <p>{t.carrito.vacio}</p>
+      <a class="boton boton--primario" href={ruta(idioma, 'tienda')}>{t.carrito.verTienda}</a>
+      <div class="carrito__ultimo" data-ultimo hidden>
+        <p data-ultimo-texto></p>
+        <button class="boton" type="button" data-ver-ultimo>{t.carrito.verUltimo}</button>
+      </div>
+    </div>
+
+    <div class="carrito__reticula" data-contenido hidden>
+      <section class="carrito__productos" aria-labelledby="titulo-productos">
+        <h2 class="sr-only" id="titulo-productos">{t.carrito.producto}</h2>
+        <ul class="lineas" role="list" data-lineas></ul>
+        <div class="retirados" data-retirados hidden>
+          <p>{t.carrito.retirados}</p>
+          <ul class="retirados__lista" role="list" data-retirados-lista></ul>
+        </div>
+      </section>
+
+      <aside class="resumen" aria-labelledby="titulo-resumen">
+        <h2 class="rotulo resumen__titulo" id="titulo-resumen">{t.carrito.subtotal}</h2>
+        <p class="resumen__subtotal" data-subtotal></p>
+        <p class="resumen__unidades" data-unidades></p>
+        <p class="resumen__nota">
+          <Icono nombre="pago" tamano={20} />
+          <span>{t.carrito.sinPago}</span>
+        </p>
+        <button class="boton boton--primario boton--bloque" type="button" data-hacer-pedido>
+          {t.carrito.hacerPedido}
+        </button>
+      </aside>
+    </div>
+
+    <section class="pedido" aria-labelledby="titulo-pedido" data-seccion-pedido hidden>
+      <h2 class="pedido__titulo" id="titulo-pedido" tabindex="-1">{t.pedido.titulo}</h2>
+      <form class="formulario formulario--doble" data-formulario-pedido novalidate>
+        <p class="formulario__aviso ancho-completo" role="alert" data-aviso-formulario></p>
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="pedido-nombre">{t.formulario.nombre}</label>
+          <input class="control" id="pedido-nombre" name="nombre" autocomplete="name" required aria-describedby="error-nombre" />
+          <p class="campo__error" id="error-nombre" data-error="nombre"></p>
+        </div>
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="pedido-telefono">{t.formulario.telefono}</label>
+          <input
+            class="control"
+            id="pedido-telefono"
+            name="telefono"
+            type="tel"
+            autocomplete="tel"
+            inputmode="tel"
+            required
+            aria-describedby="ayuda-telefono error-telefono"
+          />
+          <p class="campo__ayuda" id="ayuda-telefono">{t.formulario.telefonoAyuda}</p>
+          <p class="campo__error" id="error-telefono" data-error="telefono"></p>
+        </div>
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="pedido-correo">
+            {t.formulario.correo} <span class="campo__opcional">({t.formulario.opcional})</span>
+          </label>
+          <input class="control" id="pedido-correo" name="correo" type="email" autocomplete="email" aria-describedby="error-correo" />
+          <p class="campo__error" id="error-correo" data-error="correo"></p>
+        </div>
+
+        <fieldset class="campo ancho-completo" aria-describedby="error-entrega">
+          <legend class="grupo__leyenda">{t.pedido.entrega}</legend>
+          <div class="opciones">
+            {
+              FORMAS_ENTREGA.map((forma) => (
+                <label class="opcion">
+                  <input class="opcion-radio" type="radio" name="entrega" value={forma} required />
+                  <span class="opcion__texto">
+                    <Icono nombre={iconosEntrega[forma]} tamano={20} class="opcion__icono" />
+                    {t.entrega[forma]}
+                  </span>
+                  {forma !== 'cuba' && <span class="opcion__detalle">{t.entrega.detalles[forma]}</span>}
+                </label>
+              ))
+            }
+          </div>
+          <p class="campo__error" id="error-entrega" data-error="entrega"></p>
+        </fieldset>
+
+        <div class="campo ancho-completo" data-campo-direccion hidden>
+          <label class="campo__etiqueta" for="pedido-direccion" data-etiqueta-direccion>{t.pedido.direccion}</label>
+          <textarea
+            class="control"
+            id="pedido-direccion"
+            name="direccion"
+            rows="3"
+            autocomplete="street-address"
+            aria-describedby="ayuda-direccion error-direccion"></textarea>
+          <p class="campo__ayuda" id="ayuda-direccion" data-ayuda-direccion>{t.pedido.direccionAyuda}</p>
+          <p class="campo__error" id="error-direccion" data-error="direccion"></p>
+        </div>
+
+        <div class="campo ancho-completo">
+          <label class="campo__etiqueta" for="pedido-nota">
+            {t.formulario.nota} <span class="campo__opcional">({t.formulario.opcional})</span>
+          </label>
+          <textarea class="control" id="pedido-nota" name="nota" rows="3" maxlength="600" aria-describedby="ayuda-nota"></textarea>
+          <p class="campo__ayuda" id="ayuda-nota">{t.formulario.notaAyuda}</p>
+        </div>
+
+        <div class="ancho-completo pedido__enviar">
+          <p class="pedido__nota">{t.carrito.sinPago}</p>
+          <button class="boton boton--primario" type="submit">{t.pedido.confirmar}</button>
+        </div>
+      </form>
+    </section>
+
+    <PanelEnvio idioma={idioma} id="confirmacion" resumen={t.pedido.resumen} copiar={t.pedido.copiar}>
+      <div class="confirmacion__mas">
+        <button class="boton" type="button" data-modificar>
+          <Icono nombre="editar" tamano={18} />
+          {t.pedido.modificar}
+        </button>
+        <a class="enlace" href={ruta(idioma, 'tienda')}>{t.pedido.seguir}</a>
+      </div>
+    </PanelEnvio>
+  </div>
+
+  <script type="application/json" id="datos-carrito" set:html={jsonSeguro(datos)} />
+</Base>
+
+<style is:global>
+  .carrito {
+    padding-top: var(--espacio-6);
+    display: grid;
+    gap: var(--espacio-6);
+  }
+
+  .carrito__titulo:focus {
+    outline: none;
+  }
+
+  .carrito__aviso {
+    color: var(--color-gris);
+  }
+
+  .carrito__vacio {
+    display: grid;
+    justify-items: start;
+    gap: var(--espacio-4);
+    padding: var(--espacio-6) var(--espacio-5);
+    border: var(--linea);
+  }
+
+  .carrito__vacio > p {
+    font-size: var(--texto-l);
+  }
+
+  .carrito__ultimo {
+    display: grid;
+    justify-items: start;
+    gap: var(--espacio-3);
+    width: 100%;
+    margin-top: var(--espacio-3);
+    padding-top: var(--espacio-4);
+    border-top: var(--linea);
+  }
+
+  .carrito__ultimo p {
+    font-weight: 500;
+  }
+
+  .carrito__reticula {
+    display: grid;
+    gap: var(--espacio-6);
+  }
+
+  .lineas {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: var(--linea);
+  }
+
+  .linea {
+    display: grid;
+    grid-template-columns: 6rem 1fr;
+    grid-template-areas:
+      'imagen datos'
+      'imagen cantidad'
+      'total quitar';
+    gap: var(--espacio-3) var(--espacio-4);
+    padding: var(--espacio-4) 0;
+    border-bottom: var(--linea);
+  }
+
+  .linea__imagen {
+    grid-area: imagen;
+    align-self: start;
+    background: var(--color-fondo-imagen);
+  }
+
+  .linea__imagen img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+  }
+
+  .linea__datos {
+    grid-area: datos;
+    display: grid;
+    gap: var(--espacio-1);
+  }
+
+  .linea__nombre {
+    font-weight: 500;
+    color: var(--color-tinta);
+    text-decoration: none;
+  }
+
+  .linea__nombre:hover {
+    text-decoration: underline;
+  }
+
+  .linea__unitario {
+    font-size: var(--texto-s);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .linea__unitario s {
+    margin-left: var(--espacio-2);
+    color: var(--color-gris);
+  }
+
+  .linea__cantidad {
+    grid-area: cantidad;
+  }
+
+  .linea__cantidad .cantidad__control {
+    display: inline-flex;
+    border: 1px solid var(--color-borde-campo);
+    border-radius: var(--radio-campo);
+  }
+
+  .linea__cantidad .boton-icono {
+    color: var(--color-marino);
+  }
+
+  .linea__cantidad .cantidad__campo {
+    width: 3.25rem;
+    min-height: var(--alto-control);
+    border: 0;
+    border-left: var(--linea);
+    border-right: var(--linea);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  .linea__cantidad .cantidad__campo::-webkit-outer-spin-button,
+  .linea__cantidad .cantidad__campo::-webkit-inner-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+
+  .linea__cantidad .cantidad__campo:focus-visible {
+    outline: 2px solid var(--color-foco);
+    outline-offset: -2px;
+  }
+
+  .linea__total {
+    grid-area: total;
+    align-self: center;
+    font-weight: 500;
+    font-size: var(--texto-l);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .linea__quitar {
+    grid-area: quitar;
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--espacio-2);
+    min-height: var(--alto-control);
+    padding: 0 var(--espacio-2);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--color-marino);
+    font-size: var(--texto-s);
+  }
+
+  .linea__quitar:hover {
+    border-color: var(--color-linea);
+  }
+
+  .retirados {
+    margin-top: var(--espacio-5);
+    padding: var(--espacio-4);
+    background: var(--color-fondo-imagen);
+    border-left: 3px solid var(--color-gris);
+    font-size: var(--texto-s);
+  }
+
+  .retirados__lista {
+    display: grid;
+    gap: var(--espacio-2);
+    margin: var(--espacio-3) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .retirados__lista li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--espacio-2);
+  }
+
+  .resumen {
+    display: grid;
+    gap: var(--espacio-3);
+    align-content: start;
+    padding: var(--espacio-5);
+    border: 1px solid var(--color-marino);
+  }
+
+  .resumen__titulo {
+    color: var(--color-marino);
+  }
+
+  .resumen__subtotal {
+    font-size: var(--texto-3xl);
+    font-weight: 500;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .resumen__unidades {
+    color: var(--color-gris);
+    font-size: var(--texto-s);
+  }
+
+  .resumen__nota {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--espacio-3);
+    padding: var(--espacio-3) 0;
+    border-top: var(--linea);
+    font-size: var(--texto-s);
+  }
+
+  .pedido {
+    display: grid;
+    gap: var(--espacio-5);
+    padding-top: var(--espacio-6);
+    border-top: 2px solid var(--color-marino);
+  }
+
+  .pedido__titulo:focus {
+    outline: none;
+  }
+
+  .opcion__texto {
+    display: inline-flex;
+    gap: var(--espacio-2);
+    align-items: center;
+  }
+
+  .opcion__icono {
+    color: var(--color-marino);
+  }
+
+  .pedido__enviar {
+    display: grid;
+    gap: var(--espacio-3);
+    justify-items: start;
+  }
+
+  .pedido__nota {
+    font-size: var(--texto-s);
+    color: var(--color-gris);
+  }
+
+  .confirmacion__mas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-3) var(--espacio-5);
+    padding-top: var(--espacio-4);
+    border-top: var(--linea);
+  }
+
+  @media (min-width: 768px) {
+    .linea {
+      grid-template-columns: 7.5rem minmax(0, 1fr) auto 7rem auto;
+      grid-template-areas: 'imagen datos cantidad total quitar';
+      align-items: center;
+    }
+
+    .linea__total {
+      text-align: right;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .carrito__reticula {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--separacion);
+      align-items: start;
+    }
+
+    .carrito__productos {
+      grid-column: span 8;
+    }
+
+    .resumen {
+      grid-column: 9 / span 4;
+      position: sticky;
+      top: var(--espacio-4);
+    }
+
+    .pedido,
+    #confirmacion {
+      max-width: calc(8 / 12 * 100%);
+    }
+  }
+</style>
+
+<script>
+  import '../cliente/carrito-pagina.ts';
+</script>

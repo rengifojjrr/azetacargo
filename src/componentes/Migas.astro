@@ -1,0 +1,52 @@
+---
+/** Ruta de navegación («Inicio / Tienda / Energía / …»). El último elemento es la página actual. */
+interface Props {
+  etiqueta: string;
+  elementos: { texto: string; href?: string }[];
+}
+
+const { etiqueta, elementos } = Astro.props;
+---
+
+<nav class="migas" aria-label={etiqueta}>
+  <ol role="list">
+    {
+      elementos.map((e, i) => (
+        <li>
+          {e.href && i < elementos.length - 1 ? (
+            <a href={e.href}>{e.texto}</a>
+          ) : (
+            <span aria-current="page">{e.texto}</span>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<style>
+  .migas ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-1) 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--texto-s);
+    color: var(--color-gris);
+  }
+
+  .migas li:not(:last-child)::after {
+    content: '/';
+    margin: 0 var(--espacio-2);
+    color: var(--color-linea);
+  }
+
+  .migas a {
+    color: var(--color-marino);
+  }
+
+  .migas [aria-current] {
+    color: var(--color-tinta);
+  }
+</style>

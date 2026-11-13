@@ -1,0 +1,263 @@
+---
+import { negocio } from '../config/negocio.ts';
+import type { Idioma } from '../lib/catalogo.ts';
+import { obtenerCatalogo } from '../lib/sitio.ts';
+import { numeroWhatsApp } from '../lib/pedido.ts';
+import { otroIdioma, ruta, type Pagina } from '../i18n/rutas.ts';
+import { textos } from '../i18n/textos.ts';
+import Icono from './Icono.astro';
+import Logo from './Logo.astro';
+
+interface Props {
+  idioma: Idioma;
+  pagina: Pagina;
+  parametro?: string | undefined;
+}
+
+const { idioma, pagina, parametro } = Astro.props;
+const t = textos(idioma);
+const { categorias } = obtenerCatalogo();
+const otro = otroIdioma(idioma);
+const whatsapp = numeroWhatsApp(negocio.whatsapp);
+const anio = new Date().getFullYear();
+const informacion = (['mayoreo', 'envios', 'nosotros', 'contacto', 'preguntas', 'terminos', 'privacidad'] as const).map(
+  (p) => ({ href: ruta(idioma, p), texto: t.nav[p] }),
+);
+---
+
+<footer class="pie sobre-marino">
+  <div class="contenedor pie__reticula">
+    <div class="pie__marca">
+      <Logo href={ruta(idioma, 'inicio')} etiqueta={t.cabecera.inicio} />
+      <p class="pie__resumen">{t.pie.resumen}</p>
+    </div>
+
+    <section class="pie__bloque pie__bloque--contacto" aria-labelledby="pie-contacto">
+      <h2 class="pie__titulo" id="pie-contacto">{t.pie.contacto}</h2>
+      <dl class="pie__datos">
+        <div>
+          <dt>{t.pie.direccion}</dt>
+          <dd>{negocio.direccion}</dd>
+        </div>
+        <div>
+          <dt>{t.pie.whatsapp}</dt>
+          <dd>
+            {
+              whatsapp ? (
+                <a href={`https://wa.me/${whatsapp}`} rel="noopener">
+                  +{whatsapp}
+                </a>
+              ) : (
+                t.pie.proximamente
+              )
+            }
+          </dd>
+        </div>
+        <div>
+          <dt>{t.pie.telefono}</dt>
+          <dd>
+            {
+              negocio.telefono ? (
+                <a href={`tel:${negocio.telefono.replace(/[^\d+]/g, '')}`}>{negocio.telefono}</a>
+              ) : (
+                t.pie.proximamente
+              )
+            }
+          </dd>
+        </div>
+        <div>
+          <dt>{t.pie.correo}</dt>
+          <dd>{negocio.correo ? <a href={`mailto:${negocio.correo}`}>{negocio.correo}</a> : t.pie.proximamente}</dd>
+        </div>
+        <div>
+          <dt>{t.pie.horario}</dt>
+          <dd>
+            {negocio.horario[idioma]}
+            {negocio.horario.esEjemplo && <span class="pie__ejemplo"> ({t.pie.horarioEjemplo})</span>}
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    <nav class="pie__bloque pie__bloque--enlaces" aria-labelledby="pie-tienda">
+      <h2 class="pie__titulo" id="pie-tienda">{t.pie.tienda}</h2>
+      <ul role="list" class="pie__enlaces">
+        <li><a href={ruta(idioma, 'tienda')}>{t.cabecera.todo}</a></li>
+        {
+          categorias.map((c) => (
+            <li>
+              <a href={ruta(idioma, 'categoria', c.id)}>{c.nombre[idioma]}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <nav class="pie__bloque pie__bloque--enlaces" aria-labelledby="pie-informacion">
+      <h2 class="pie__titulo" id="pie-informacion">{t.pie.informacion}</h2>
+      <ul role="list" class="pie__enlaces">
+        {
+          informacion.map((e) => (
+            <li>
+              <a href={e.href}>{e.texto}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+
+  <div class="contenedor pie__base">
+    <a class="pie__marketplace" href={negocio.marketplace} rel="noopener">
+      {t.pie.marketplace} — {t.pie.proximamente.toLowerCase()}
+      <Icono nombre="externo" tamano={16} />
+    </a>
+    <p class="pie__precios">{t.pie.precios}</p>
+    <p class="pie__derechos">
+      {t.pie.derechos(anio)}
+      <a class="pie__idioma" href={ruta(otro, pagina, parametro)} hreflang={otro} lang={otro}>{t.idioma.cambiar}</a>
+    </p>
+  </div>
+</footer>
+
+<style>
+  .pie {
+    margin-top: var(--espacio-seccion);
+    padding-top: var(--espacio-7);
+    font-size: var(--texto-s);
+  }
+
+  :global(main:has(> .banda-final:last-child)) + .pie {
+    margin-top: 0;
+    border-top: 1px solid var(--color-linea-sobre-marino);
+  }
+
+  .pie a {
+    color: var(--color-blanco);
+  }
+
+  .pie__reticula {
+    display: grid;
+    gap: var(--espacio-6) var(--separacion);
+    padding-bottom: var(--espacio-6);
+  }
+
+  .pie__resumen {
+    margin-top: var(--espacio-4);
+    max-width: 26rem;
+    color: var(--color-sobre-marino-suave);
+  }
+
+  .pie__titulo {
+    margin-bottom: var(--espacio-3);
+    font-size: var(--texto-xs);
+    letter-spacing: 0.1em;
+    color: var(--color-sobre-marino-suave);
+  }
+
+  .pie__datos {
+    display: grid;
+    gap: var(--espacio-2);
+    margin: 0;
+  }
+
+  .pie__datos div {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: var(--espacio-2);
+  }
+
+  .pie__datos dt {
+    color: var(--color-sobre-marino-suave);
+  }
+
+  .pie__datos dd {
+    margin: 0;
+  }
+
+  .pie__ejemplo {
+    color: var(--color-sobre-marino-suave);
+  }
+
+  .pie__enlaces {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pie__enlaces a {
+    display: inline-block;
+    padding: 0.3rem 0;
+    text-decoration: none;
+  }
+
+  .pie__enlaces a:hover {
+    text-decoration: underline;
+  }
+
+  .pie__base {
+    display: grid;
+    gap: var(--espacio-3);
+    padding-block: var(--espacio-5);
+    border-top: 1px solid var(--color-linea-sobre-marino);
+    color: var(--color-sobre-marino-suave);
+  }
+
+  .pie__marketplace {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--espacio-2);
+    min-height: 2rem;
+    justify-self: start;
+    font-family: var(--fuente-titulos);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .pie__marketplace:hover {
+    text-decoration: underline;
+  }
+
+  .pie__idioma {
+    display: inline-block;
+    margin-left: var(--espacio-4);
+    padding: 0.25rem 0;
+  }
+
+  @media (min-width: 768px) {
+    .pie__reticula {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .pie__reticula {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+
+    .pie__marca {
+      grid-column: span 4;
+    }
+
+    .pie__bloque--contacto {
+      grid-column: span 4;
+    }
+
+    .pie__bloque--enlaces {
+      grid-column: span 2;
+    }
+
+    .pie__base {
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: var(--espacio-6);
+    }
+
+    .pie__precios {
+      justify-self: center;
+    }
+  }
+</style>

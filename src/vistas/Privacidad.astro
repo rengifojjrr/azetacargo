@@ -1,0 +1,125 @@
+---
+/** Aviso de privacidad. BORRADOR: debe revisarlo un abogado antes de publicar la versión definitiva. */
+import Icono from '../componentes/Icono.astro';
+import PaginaTexto from '../layouts/PaginaTexto.astro';
+import type { Idioma } from '../lib/catalogo.ts';
+import { ruta } from '../i18n/rutas.ts';
+import { textos } from '../i18n/textos.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+
+const { idioma } = Astro.props;
+const t = textos(idioma);
+const fecha = idioma === 'es' ? '13 de noviembre de 2026' : 'November 13, 2026';
+---
+
+<PaginaTexto idioma={idioma} pagina="privacidad" titulo={t.legal.privacidad} descripcion={t.legal.privacidadDescripcion}>
+  <p class="borrador">
+    <Icono nombre="alerta" tamano={20} />
+    <span><strong>{t.legal.borrador}.</strong> {t.legal.borradorTexto}</span>
+  </p>
+  <p class="actualizado">{t.legal.actualizado}: {fecha}</p>
+
+  {
+    idioma === 'es' ? (
+      <div class="prosa">
+        <h2>1. Qué datos pedimos</h2>
+        <p>
+          Al hacer un pedido o pedir una cotización te pedimos tu nombre, teléfono, correo (opcional), forma de entrega,
+          dirección o destino cuando hace falta y una nota opcional. En las cotizaciones también puedes indicar tu
+          empresa.
+        </p>
+        <h2>2. Cómo nos llegan</h2>
+        <p>
+          Este sitio no guarda tus datos en ningún servidor. El formulario arma un mensaje en tu propio navegador y tú
+          decides enviarlo por WhatsApp o por correo. Desde ese momento, el mensaje lo manejan WhatsApp o tu proveedor
+          de correo, con sus propias políticas de privacidad.
+        </p>
+        <h2>3. Qué guarda tu navegador</h2>
+        <p>
+          El carrito y el resumen de tu último pedido se guardan en el almacenamiento local de tu navegador
+          (localStorage), solo en tu dispositivo, para que no se pierdan al cambiar de página. Puedes borrarlos desde la
+          configuración del navegador. El sitio no usa cookies de publicidad ni herramientas de análisis.
+        </p>
+        <h2>4. Para qué usamos tus datos</h2>
+        <p>
+          Para responder tu pedido o cotización: confirmar precios, disponibilidad, entrega y forma de pago. No vendemos
+          tus datos.
+        </p>
+        <h2>5. Alojamiento del sitio</h2>
+        <p>
+          El sitio está alojado en GitHub Pages. Como cualquier servidor web, puede registrar datos técnicos de las
+          visitas, como la dirección IP.
+        </p>
+        <h2>6. Tus derechos</h2>
+        <p>
+          Puedes pedirnos que corrijamos o borremos los datos de tus pedidos escribiéndonos desde la página de
+          <a href={ruta(idioma, 'contacto')}>Contacto</a>.
+        </p>
+        <h2>7. Menores de edad</h2>
+        <p>Este sitio no está dirigido a menores de 13 años.</p>
+        <h2>8. Cambios</h2>
+        <p>Podemos actualizar este aviso. La fecha de arriba indica la última versión.</p>
+      </div>
+    ) : (
+      <div class="prosa">
+        <h2>1. What data we ask for</h2>
+        <p>
+          When you place an order or request a quote we ask for your name, phone, email (optional), delivery method,
+          address or destination when needed and an optional note. For quotes you may also add your company.
+        </p>
+        <h2>2. How it reaches us</h2>
+        <p>
+          This site does not store your data on any server. The form prepares a message in your own browser and you
+          decide to send it by WhatsApp or email. From then on, the message is handled by WhatsApp or your email
+          provider, under their own privacy policies.
+        </p>
+        <h2>3. What your browser keeps</h2>
+        <p>
+          Your cart and the summary of your last order are kept in your browser’s local storage (localStorage), only on
+          your device, so they are not lost when you change pages. You can clear them from your browser settings. The
+          site does not use advertising cookies or analytics tools.
+        </p>
+        <h2>4. How we use your data</h2>
+        <p>
+          To answer your order or quote: confirm prices, availability, delivery and payment method. We do not sell your
+          data.
+        </p>
+        <h2>5. Hosting</h2>
+        <p>
+          The site is hosted on GitHub Pages. Like any web server, it may log technical visit data such as the IP
+          address.
+        </p>
+        <h2>6. Your rights</h2>
+        <p>
+          You can ask us to correct or delete the data from your orders by writing to us through the
+          <a href={ruta(idioma, 'contacto')}>Contact</a> page.
+        </p>
+        <h2>7. Children</h2>
+        <p>This site is not directed to children under 13.</p>
+        <h2>8. Changes</h2>
+        <p>We may update this notice. The date above shows the latest version.</p>
+      </div>
+    )
+  }
+</PaginaTexto>
+
+<style>
+  .borrador {
+    display: flex;
+    gap: var(--espacio-3);
+    align-items: flex-start;
+    padding: var(--espacio-4);
+    border-left: 4px solid var(--color-naranja);
+    background: var(--color-fondo-imagen);
+    color: var(--color-tinta);
+  }
+
+  .actualizado {
+    margin: var(--espacio-4) 0 var(--espacio-2);
+    font-size: var(--texto-s);
+    color: var(--color-gris);
+  }
+</style>

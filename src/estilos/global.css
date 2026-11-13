@@ -1,0 +1,733 @@
+/* Estilos de base y piezas compartidas. Los colores salen de tokens.css. */
+
+/* ── Base ───────────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: var(--espacio-6);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--fuente-texto);
+  font-size: var(--texto-m);
+  line-height: 1.5;
+  color: var(--color-texto);
+  background: var(--color-fondo);
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+img,
+svg,
+picture {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+dl,
+dd,
+figure,
+fieldset,
+blockquote {
+  margin: 0;
+}
+
+fieldset {
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+legend {
+  padding: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  border-radius: 0;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--color-marino);
+  color: var(--color-blanco);
+}
+
+.sobre-marino {
+  --color-foco: var(--color-blanco);
+  background: var(--color-marino);
+  color: var(--color-sobre-marino);
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.saltar {
+  position: absolute;
+  left: var(--espacio-4);
+  top: var(--espacio-2);
+  z-index: 100;
+  padding: var(--espacio-2) var(--espacio-4);
+  background: var(--color-blanco);
+  color: var(--color-marino);
+  font-family: var(--fuente-titulos);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+
+.saltar:focus {
+  transform: none;
+}
+
+/* ── Tipografía ─────────────────────────────────────────────────────────────── */
+.titulo,
+h1,
+h2 {
+  font-family: var(--fuente-titulos);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.05;
+  color: var(--color-titulos);
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--texto-3xl);
+}
+
+h2 {
+  font-size: var(--texto-xl);
+}
+
+h3 {
+  font-size: var(--texto-m);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+@media (min-width: 768px) {
+  h1 {
+    font-size: var(--texto-4xl);
+  }
+
+  h2 {
+    font-size: var(--texto-2xl);
+  }
+}
+
+.sobre-marino h1,
+.sobre-marino h2,
+.sobre-marino .titulo {
+  color: var(--color-sobre-marino);
+}
+
+/* Rótulos: menús, etiquetas y categorías en versalitas condensadas */
+.rotulo {
+  font-family: var(--fuente-titulos);
+  font-weight: 600;
+  font-size: var(--texto-xs);
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-texto-suave);
+}
+
+.sku {
+  font-family: var(--fuente-codigo);
+  font-size: var(--texto-xs);
+  letter-spacing: 0.02em;
+  color: var(--color-texto-suave);
+}
+
+.entrada {
+  font-size: var(--texto-l);
+  line-height: 1.55;
+  max-width: 62ch;
+}
+
+.texto-suave {
+  color: var(--color-texto-suave);
+}
+
+.prosa {
+  max-width: 68ch;
+}
+
+.prosa > * + * {
+  margin-top: var(--espacio-4);
+}
+
+.prosa h2 {
+  margin-top: var(--espacio-7);
+  font-size: var(--texto-xl);
+}
+
+.prosa h3 {
+  margin-top: var(--espacio-5);
+  font-weight: 600;
+}
+
+.prosa ul,
+.prosa ol {
+  padding-left: 1.25rem;
+}
+
+.prosa li + li {
+  margin-top: var(--espacio-2);
+}
+
+/* ── Retícula ───────────────────────────────────────────────────────────────── */
+.contenedor {
+  width: 100%;
+  max-width: calc(var(--ancho-maximo) + 2 * var(--margen-pagina));
+  margin-inline: auto;
+  padding-inline: var(--margen-pagina);
+}
+
+.seccion {
+  padding-block: var(--espacio-seccion);
+}
+
+.seccion + .seccion {
+  border-top: var(--linea);
+}
+
+.reticula {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--separacion);
+}
+
+@media (min-width: 1024px) {
+  .reticula {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+}
+
+/* Encabezado de sección: título a la izquierda, línea fina y enlace a la derecha */
+.encabezado-seccion {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-4);
+  margin-bottom: var(--espacio-5);
+}
+
+.encabezado-seccion::after {
+  content: '';
+  flex: 1;
+  order: 1;
+  border-top: var(--linea);
+  transform: translateY(-0.3em);
+}
+
+.encabezado-seccion > a {
+  order: 2;
+  white-space: nowrap;
+  font-size: var(--texto-s);
+  color: var(--color-marino);
+}
+
+/* Cuadrícula de celdas que comparten la línea fina (como una hoja de catálogo) */
+.celdas {
+  display: grid;
+  grid-template-columns: repeat(var(--columnas, 2), minmax(0, 1fr));
+  border-top: var(--linea);
+  border-left: var(--linea);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.celdas > * {
+  border-right: var(--linea);
+  border-bottom: var(--linea);
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .celdas {
+    --columnas: 3;
+  }
+}
+
+@media (min-width: 1024px) {
+  .celdas {
+    --columnas: 4;
+  }
+}
+
+/* ── Botones ────────────────────────────────────────────────────────────────── */
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+  min-height: var(--alto-control);
+  padding: 0 var(--espacio-5);
+  border: 1px solid var(--color-marino);
+  border-radius: var(--radio);
+  background: transparent;
+  color: var(--color-marino);
+  font-family: var(--fuente-titulos);
+  font-weight: 600;
+  font-size: var(--texto-s);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  line-height: 1.1;
+  text-align: center;
+  transition:
+    background-color var(--duracion),
+    color var(--duracion);
+}
+
+.boton:hover {
+  background: var(--color-fondo-imagen);
+}
+
+.boton--primario {
+  background: var(--color-marino);
+  color: var(--color-blanco);
+}
+
+.boton--primario:hover {
+  background: var(--color-marino-claro);
+  border-color: var(--color-marino-claro);
+}
+
+.boton--claro {
+  background: var(--color-blanco);
+  border-color: var(--color-blanco);
+  color: var(--color-marino);
+}
+
+.boton--claro:hover {
+  background: var(--color-linea);
+}
+
+.boton--bloque {
+  width: 100%;
+}
+
+.boton--chico {
+  min-height: 2.5rem;
+  padding: 0 var(--espacio-3);
+}
+
+.boton:disabled,
+.boton[aria-disabled='true'] {
+  background: var(--color-fondo-imagen);
+  border-color: var(--color-linea);
+  color: var(--color-gris);
+  cursor: not-allowed;
+}
+
+.boton-icono {
+  display: inline-grid;
+  place-items: center;
+  width: var(--alto-control);
+  height: var(--alto-control);
+  padding: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+}
+
+.boton-icono:hover {
+  border-color: currentColor;
+}
+
+.enlace {
+  color: var(--color-marino);
+  font-weight: 500;
+}
+
+/* ── Insignias y precios ────────────────────────────────────────────────────── */
+.insignia {
+  display: inline-block;
+  padding: 0.2rem 0.4rem;
+  font-family: var(--fuente-titulos);
+  font-weight: 600;
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--color-naranja);
+  color: var(--color-marino);
+}
+
+.insignia--neutra {
+  background: var(--color-blanco);
+  color: var(--color-gris);
+  outline: 1px solid var(--color-linea);
+  outline-offset: -1px;
+}
+
+.precio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--espacio-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.precio__actual {
+  font-weight: 500;
+  font-size: var(--texto-l);
+  color: var(--color-tinta);
+}
+
+.precio--oferta .precio__actual {
+  text-decoration: underline 3px var(--color-naranja);
+  text-underline-offset: 0.3em;
+}
+
+.precio__antes {
+  font-size: var(--texto-s);
+  color: var(--color-gris);
+}
+
+/* ── Formularios ────────────────────────────────────────────────────────────── */
+.campo {
+  display: grid;
+  gap: var(--espacio-2);
+  align-content: start;
+}
+
+.campo__etiqueta,
+.grupo__leyenda {
+  font-family: var(--fuente-titulos);
+  font-weight: 600;
+  font-size: var(--texto-s);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-tinta);
+}
+
+.campo__opcional {
+  font-family: var(--fuente-texto);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--color-gris);
+}
+
+.campo__ayuda {
+  font-size: var(--texto-s);
+  color: var(--color-gris);
+}
+
+.campo__error {
+  display: flex;
+  gap: var(--espacio-2);
+  align-items: flex-start;
+  font-size: var(--texto-s);
+  color: var(--color-error);
+}
+
+.campo__error:empty {
+  display: none;
+}
+
+.control {
+  width: 100%;
+  min-height: var(--alto-control);
+  padding: var(--espacio-2) var(--espacio-3);
+  border: 1px solid var(--color-borde-campo);
+  border-radius: var(--radio-campo);
+  background: var(--color-blanco);
+  color: var(--color-tinta);
+  appearance: none;
+}
+
+textarea.control {
+  min-height: 6rem;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.control:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 0;
+  border-color: var(--color-marino);
+}
+
+.control[aria-invalid='true'] {
+  border-color: var(--color-error);
+  box-shadow: inset 3px 0 0 var(--color-error);
+}
+
+.control::placeholder {
+  color: var(--color-gris);
+  opacity: 1;
+}
+
+/* Lista desplegable con flecha propia (la del sistema es redondeada) */
+.desplegable {
+  position: relative;
+}
+
+.desplegable .control {
+  padding-right: 2.5rem;
+}
+
+.desplegable .icono {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  translate: 0 -50%;
+  pointer-events: none;
+  color: var(--color-marino);
+}
+
+/* Casillas y opciones cuadradas */
+.casilla,
+.opcion-radio {
+  appearance: none;
+  flex: none;
+  display: inline-grid;
+  place-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  border: 1px solid var(--color-borde-campo);
+  border-radius: var(--radio);
+  background: var(--color-blanco);
+}
+
+.casilla:checked {
+  background: var(--color-marino);
+  border-color: var(--color-marino);
+}
+
+.casilla:checked::before {
+  content: '';
+  width: 0.6rem;
+  height: 0.35rem;
+  border-left: 2px solid var(--color-blanco);
+  border-bottom: 2px solid var(--color-blanco);
+  transform: translateY(-1px) rotate(-45deg);
+}
+
+.opcion-radio:checked {
+  border-color: var(--color-marino);
+  background: var(--color-marino);
+  box-shadow: inset 0 0 0 4px var(--color-blanco);
+}
+
+.casilla:focus-visible,
+.opcion-radio:focus-visible {
+  outline-offset: 2px;
+}
+
+/* Opciones grandes (forma de entrega) */
+.opciones {
+  display: grid;
+  gap: 0;
+  border: var(--linea);
+}
+
+.opcion {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--espacio-1) var(--espacio-3);
+  align-items: start;
+  padding: var(--espacio-4);
+  cursor: pointer;
+}
+
+.opcion + .opcion {
+  border-top: var(--linea);
+}
+
+.opcion:has(:checked) {
+  background: var(--color-fondo-imagen);
+  box-shadow: inset 3px 0 0 var(--color-marino);
+}
+
+.opcion__texto {
+  font-weight: 500;
+}
+
+.opcion__detalle {
+  grid-column: 2;
+  font-size: var(--texto-s);
+  color: var(--color-gris);
+}
+
+.formulario {
+  display: grid;
+  gap: var(--espacio-5);
+}
+
+.formulario__aviso {
+  padding: var(--espacio-3) var(--espacio-4);
+  border-left: 3px solid var(--color-error);
+  background: var(--color-fondo-imagen);
+  color: var(--color-error);
+  font-size: var(--texto-s);
+}
+
+.formulario__aviso:empty {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .formulario--doble {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .formulario--doble > .ancho-completo {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ── Resumen para enviar (pedido y cotización) ─────────────────────────────── */
+.resumen-envio {
+  display: grid;
+  gap: var(--espacio-5);
+  padding: var(--espacio-5);
+  border: 1px solid var(--color-marino);
+}
+
+.resumen-envio__texto {
+  max-height: 22rem;
+  overflow: auto;
+  margin: 0;
+  padding: var(--espacio-4);
+  background: var(--color-fondo-imagen);
+  border: var(--linea);
+  font-family: var(--fuente-codigo);
+  font-size: var(--texto-s);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.resumen-envio__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+}
+
+.resumen-envio__numero {
+  font-family: var(--fuente-codigo);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.nota-prueba {
+  display: flex;
+  gap: var(--espacio-3);
+  align-items: flex-start;
+  padding: var(--espacio-3) var(--espacio-4);
+  border-left: 3px solid var(--color-marino);
+  background: var(--color-fondo-imagen);
+  font-size: var(--texto-s);
+}
+
+/* ── Aviso flotante («Agregado al carrito») ─────────────────────────────────── */
+.aviso-flotante {
+  position: fixed;
+  left: var(--espacio-4);
+  right: var(--espacio-4);
+  bottom: var(--espacio-4);
+  z-index: 50;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-4);
+  max-width: 28rem;
+  margin-inline: auto;
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--color-marino);
+  color: var(--color-blanco);
+  font-size: var(--texto-s);
+  --color-foco: var(--color-blanco);
+}
+
+.aviso-flotante[hidden] {
+  display: none;
+}
+
+.aviso-flotante a {
+  font-family: var(--fuente-titulos);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-blanco);
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .aviso-flotante {
+    left: auto;
+    right: var(--margen-pagina);
+    bottom: var(--margen-pagina);
+  }
+}
+
+/* ── Movimiento reducido ────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

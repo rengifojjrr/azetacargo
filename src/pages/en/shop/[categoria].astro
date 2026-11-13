@@ -1,0 +1,12 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Catalogo from '../../../vistas/Catalogo.astro';
+import { obtenerCatalogo } from '../../../lib/sitio.ts';
+
+export const getStaticPaths = (() =>
+  obtenerCatalogo().categorias.map((c) => ({ params: { categoria: c.id } }))) satisfies GetStaticPaths;
+
+const { categoria } = Astro.params;
+---
+
+<Catalogo idioma="en" categoria={categoria} />

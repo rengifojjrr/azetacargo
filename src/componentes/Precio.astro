@@ -1,0 +1,41 @@
+---
+import type { Idioma, Producto } from '../lib/catalogo.ts';
+import { formatearPrecio } from '../lib/formato.ts';
+import { textos } from '../i18n/textos.ts';
+
+interface Props {
+  producto: Producto;
+  idioma: Idioma;
+  grande?: boolean;
+}
+
+const { producto, idioma, grande = false } = Astro.props;
+const t = textos(idioma);
+const enOferta = producto.precioOferta !== null;
+---
+
+<p class:list={['precio', { 'precio--oferta': enOferta, 'precio--grande': grande }]}>
+  <span class="precio__actual">
+    {enOferta && <span class="sr-only">{t.tarjeta.oferta}: </span>}
+    {formatearPrecio(producto.precioFinal)}
+  </span>
+  {
+    enOferta && (
+      <s class="precio__antes">
+        <span class="sr-only">{t.tarjeta.antes}: </span>
+        {formatearPrecio(producto.precio)}
+      </s>
+    )
+  }
+</p>
+
+<style>
+  .precio--grande .precio__actual {
+    font-size: var(--texto-3xl);
+    letter-spacing: -0.01em;
+  }
+
+  .precio--grande .precio__antes {
+    font-size: var(--texto-l);
+  }
+</style>

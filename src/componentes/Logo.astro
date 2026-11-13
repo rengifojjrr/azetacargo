@@ -1,0 +1,105 @@
+---
+/**
+ * Logotipo provisional: AZETA en versalitas condensadas, CARGO debajo con espaciado amplio
+ * y el colibrí geométrico. «oscuro» es para fondos azul marino; «claro» para fondos blancos.
+ */
+import { FACETAS_COLIBRI, OJO_COLIBRI, VISTA_COLIBRI } from '../lib/marca.ts';
+
+interface Props {
+  href: string;
+  etiqueta: string;
+  variante?: 'oscuro' | 'claro';
+}
+
+const { href, etiqueta, variante = 'oscuro' } = Astro.props;
+---
+
+<a class:list={['logo', `logo--${variante}`]} href={href} aria-label={etiqueta}>
+  <span class="logo__palabras" aria-hidden="true">
+    <span class="logo__azeta">AZETA</span>
+    <span class="logo__cargo">CARGO</span>
+  </span>
+  <svg class="logo__colibri" viewBox={VISTA_COLIBRI} aria-hidden="true" focusable="false">
+    {FACETAS_COLIBRI.map((f) => <polygon class={`logo__${f.papel}`} points={f.puntos} />)}
+    <rect class="logo__ojo" x={OJO_COLIBRI.x} y={OJO_COLIBRI.y} width={OJO_COLIBRI.lado} height={OJO_COLIBRI.lado} />
+  </svg>
+</a>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.125rem;
+    color: var(--color-blanco);
+    text-decoration: none;
+  }
+
+  .logo__palabras {
+    display: grid;
+    justify-items: start;
+  }
+
+  .logo__azeta {
+    font-family: var(--fuente-titulos);
+    font-weight: 600;
+    font-size: 1.625rem;
+    line-height: 0.82;
+    letter-spacing: 0.05em;
+  }
+
+  .logo__cargo {
+    margin-top: 0.3rem;
+    font-family: var(--fuente-titulos);
+    font-weight: 600;
+    font-size: 0.5625rem;
+    line-height: 1;
+    letter-spacing: 0.69em;
+    color: var(--color-turquesa);
+  }
+
+  .logo__colibri {
+    width: 2.1rem;
+    height: 1.75rem;
+    margin-top: -0.45rem;
+  }
+
+  .logo__primario {
+    fill: var(--color-blanco);
+  }
+
+  .logo__acento {
+    fill: var(--color-turquesa);
+  }
+
+  .logo__ojo {
+    fill: var(--color-marino);
+  }
+
+  .logo--claro {
+    color: var(--color-marino);
+  }
+
+  .logo--claro .logo__cargo {
+    color: var(--color-marino);
+  }
+
+  .logo--claro .logo__primario {
+    fill: var(--color-marino);
+  }
+
+  @media (min-width: 1024px) {
+    .logo__azeta {
+      font-size: 1.875rem;
+    }
+
+    .logo__cargo {
+      font-size: 0.625rem;
+      letter-spacing: 0.72em;
+    }
+
+    .logo__colibri {
+      width: 2.4rem;
+      height: 2rem;
+    }
+  }
+</style>

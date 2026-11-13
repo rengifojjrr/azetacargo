@@ -1,0 +1,155 @@
+---
+import Icono from '../componentes/Icono.astro';
+import PaginaTexto from '../layouts/PaginaTexto.astro';
+import { negocio } from '../config/negocio.ts';
+import type { Idioma } from '../lib/catalogo.ts';
+import type { NombreIcono } from '../lib/iconos.ts';
+import { numeroWhatsApp } from '../lib/pedido.ts';
+import { ruta } from '../i18n/rutas.ts';
+import { textos } from '../i18n/textos.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+
+const { idioma } = Astro.props;
+const t = textos(idioma);
+const whatsapp = numeroWhatsApp(negocio.whatsapp);
+const filas: { icono: NombreIcono; etiqueta: string; valor: string; href?: string; nota?: string }[] = [
+  { icono: 'ubicacion', etiqueta: t.pie.direccion, valor: negocio.direccion },
+  whatsapp
+    ? { icono: 'mensaje', etiqueta: t.pie.whatsapp, valor: `+${whatsapp}`, href: `https://wa.me/${whatsapp}` }
+    : { icono: 'mensaje', etiqueta: t.pie.whatsapp, valor: t.pie.proximamente },
+  negocio.telefono
+    ? {
+        icono: 'movil',
+        etiqueta: t.pie.telefono,
+        valor: negocio.telefono,
+        href: `tel:${negocio.telefono.replace(/[^\d+]/g, '')}`,
+      }
+    : { icono: 'movil', etiqueta: t.pie.telefono, valor: t.pie.proximamente },
+  negocio.correo
+    ? { icono: 'correo', etiqueta: t.pie.correo, valor: negocio.correo, href: `mailto:${negocio.correo}` }
+    : { icono: 'correo', etiqueta: t.pie.correo, valor: t.pie.proximamente },
+  {
+    icono: 'reloj',
+    etiqueta: t.pie.horario,
+    valor: negocio.horario[idioma],
+    ...(negocio.horario.esEjemplo ? { nota: t.pie.horarioEjemplo } : {}),
+  },
+];
+const sinCanales = !whatsapp && !negocio.telefono && !negocio.correo;
+---
+
+<PaginaTexto
+  idioma={idioma}
+  pagina="contacto"
+  titulo={t.contacto.titulo}
+  descripcion={t.contacto.descripcion}
+  entrada={t.contacto.entrada}
+>
+  {
+    sinCanales && (
+      <p class="nota-prueba contacto__pendiente">
+        <Icono nombre="info" tamano={18} />
+        <span>{t.contacto.pendiente}</span>
+      </p>
+    )
+  }
+  <dl class="contacto">
+    {
+      filas.map((f) => (
+        <div class="contacto__fila">
+          <dt>
+            <Icono nombre={f.icono} tamano={22} />
+            {f.etiqueta}
+          </dt>
+          <dd>
+            {f.href ? <a href={f.href}>{f.valor}</a> : f.valor}
+            {f.nota && <span class="contacto__nota"> ({f.nota})</span>}
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+  {
+    negocio.redes.length > 0 && (
+      <section class="contacto__redes" aria-labelledby="titulo-redes">
+        <h2 class="rotulo" id="titulo-redes">
+          {t.contacto.redes}
+        </h2>
+        <ul role="list">
+          {negocio.redes.map((r) => (
+            <li>
+              <a href={r.url} rel="noopener">
+                {r.nombre}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+  <div class="contacto__acciones">
+    <a class="boton boton--primario" href={ruta(idioma, 'tienda')}>{t.inicio.verTienda}</a>
+    <a class="boton" href={ruta(idioma, 'mayoreo')}>{t.inicio.cotizar}</a>
+  </div>
+</PaginaTexto>
+
+<style>
+  .contacto__pendiente {
+    margin-bottom: var(--espacio-5);
+  }
+
+  .contacto {
+    margin: 0;
+    border-top: var(--linea);
+  }
+
+  .contacto__fila {
+    display: grid;
+    gap: var(--espacio-2) var(--espacio-4);
+    padding: var(--espacio-4) 0;
+    border-bottom: var(--linea);
+  }
+
+  .contacto dt {
+    display: flex;
+    gap: var(--espacio-3);
+    align-items: center;
+    font-family: var(--fuente-titulos);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: var(--texto-s);
+    color: var(--color-marino);
+  }
+
+  .contacto dd {
+    margin: 0;
+    font-size: var(--texto-l);
+  }
+
+  .contacto__nota {
+    font-size: var(--texto-s);
+    color: var(--color-gris);
+  }
+
+  .contacto__redes {
+    margin-top: var(--espacio-6);
+  }
+
+  .contacto__acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-3);
+    margin-top: var(--espacio-6);
+  }
+
+  @media (min-width: 768px) {
+    .contacto__fila {
+      grid-template-columns: 14rem 1fr;
+      align-items: center;
+    }
+  }
+</style>

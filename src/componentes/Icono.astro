@@ -1,0 +1,32 @@
+---
+import { ICONOS, type NombreIcono } from '../lib/iconos.ts';
+
+interface Props {
+  nombre: NombreIcono;
+  tamano?: number;
+  class?: string;
+}
+
+const { nombre, tamano = 24, class: clase } = Astro.props;
+---
+
+<svg
+  class:list={['icono', clase]}
+  width={tamano}
+  height={tamano}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="square"
+  stroke-linejoin="miter"
+  aria-hidden="true"
+  focusable="false"
+  set:html={ICONOS[nombre]}
+/>
+
+<style>
+  .icono :global(*) {
+    vector-effect: non-scaling-stroke;
+  }
+</style>

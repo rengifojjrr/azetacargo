@@ -19,7 +19,7 @@ export function leerSiNo(valor: string): boolean | null | undefined {
 export function leerPrecio(valor: string): number | null {
   let v = valor.trim();
   if (v === '') return null;
-  v = v.replace(/^(us\$|usd|\$)\s*/i, '').replace(/\s*(usd|dólares|dolares)$/i, '').replace(/[\s  ]/g, '');
+  v = v.replace(/^(us\$|usd|\$)\s*/i, '').replace(/\s*(usd|dólares|dolares)$/i, '').replace(/[\s\u00a0\u202f]/g, '');
   if (!/^[0-9.,]+$/.test(v)) return Number.NaN;
 
   const ultimaComa = v.lastIndexOf(',');

@@ -1,0 +1,466 @@
+---
+import type { Idioma } from '../lib/catalogo.ts';
+import { obtenerCatalogo } from '../lib/sitio.ts';
+import { otroIdioma, ruta, type Pagina } from '../i18n/rutas.ts';
+import { textos } from '../i18n/textos.ts';
+import Icono from './Icono.astro';
+import Logo from './Logo.astro';
+
+interface Props {
+  idioma: Idioma;
+  pagina: Pagina;
+  parametro?: string | undefined;
+  categoriaActiva?: string | undefined;
+}
+
+const { idioma, pagina, parametro, categoriaActiva } = Astro.props;
+const t = textos(idioma);
+const { categorias } = obtenerCatalogo();
+const otro = otroIdioma(idioma);
+
+const principales = [
+  { href: ruta(idioma, 'tienda'), texto: t.cabecera.todo, activo: pagina === 'tienda' },
+  ...categorias.map((c) => ({
+    href: ruta(idioma, 'categoria', c.id),
+    texto: c.nombre[idioma],
+    activo: categoriaActiva === c.id,
+  })),
+];
+const mayoreo = { href: ruta(idioma, 'mayoreo'), texto: t.nav.mayoreo, activo: pagina === 'mayoreo' };
+const secundarios = (['envios', 'nosotros', 'contacto', 'preguntas'] as const).map((p) => ({
+  href: ruta(idioma, p),
+  texto: t.nav[p],
+  activo: pagina === p,
+}));
+---
+
+<header class="cabecera">
+  <div class="cabecera__banda sobre-marino">
+    <div class="contenedor cabecera__fila">
+      <details class="menu" data-menu>
+        <summary class="boton-icono menu__boton" aria-label={t.cabecera.menu}>
+          <Icono nombre="menu" class="menu__abrir" />
+          <Icono nombre="cerrar" class="menu__cerrar" />
+        </summary>
+        <nav class="menu__panel" aria-label={t.cabecera.navegacion}>
+          <ul role="list" class="menu__lista">
+            {
+              principales.map((e) => (
+                <li>
+                  <a href={e.href} aria-current={e.activo ? 'page' : undefined}>
+                    {e.texto}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+          <ul role="list" class="menu__lista menu__lista--secundaria">
+            <li>
+              <a href={mayoreo.href} aria-current={mayoreo.activo ? 'page' : undefined}>{mayoreo.texto}</a>
+            </li>
+            {
+              secundarios.map((e) => (
+                <li>
+                  <a href={e.href} aria-current={e.activo ? 'page' : undefined}>
+                    {e.texto}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </details>
+
+      <div class="cabecera__logo">
+        <Logo href={ruta(idioma, 'inicio')} etiqueta={t.cabecera.inicio} />
+      </div>
+
+      <form class="buscador" role="search" action={ruta(idioma, 'tienda')} method="get">
+        <label class="sr-only" for="buscar">{t.cabecera.buscar}</label>
+        <input
+          class="buscador__campo"
+          id="buscar"
+          name="q"
+          type="search"
+          placeholder={t.cabecera.buscarEjemplo}
+          autocomplete="off"
+          enterkeyhint="search"
+          maxlength="100"
+          data-buscador
+        />
+        <button class="buscador__boton" type="submit" aria-label={t.cabecera.botonBuscar}>
+          <Icono nombre="buscar" />
+        </button>
+      </form>
+
+      <a
+        class="cabecera__idioma"
+        href={ruta(otro, pagina, parametro)}
+        hreflang={otro}
+        data-cambiar-idioma
+      >
+        <span>{t.idioma.corto}</span><span class="sr-only" lang={otro}>, {t.idioma.cambiar}</span>
+      </a>
+
+      <a
+        class="cabecera__carrito"
+        href={ruta(idioma, 'carrito')}
+        aria-label={t.cabecera.carritoUnidades(0)}
+        aria-current={pagina === 'carrito' ? 'page' : undefined}
+        data-enlace-carrito
+      >
+        <Icono nombre="carrito" />
+        <span class="cabecera__carrito-texto" aria-hidden="true">{t.cabecera.carrito}</span>
+        <span class="cabecera__cuenta" data-cuenta-carrito aria-hidden="true" hidden>0</span>
+      </a>
+    </div>
+  </div>
+
+  <nav class="navegacion" aria-label={t.cabecera.navegacion}>
+    <div class="contenedor">
+      <ul role="list" class="navegacion__lista">
+        {
+          principales.map((e) => (
+            <li>
+              <a href={e.href} aria-current={e.activo ? 'page' : undefined}>
+                {e.texto}
+              </a>
+            </li>
+          ))
+        }
+        <li class="navegacion__mayoreo">
+          <a href={mayoreo.href} aria-current={mayoreo.activo ? 'page' : undefined}>{mayoreo.texto}</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<style>
+  .cabecera {
+    position: relative;
+    z-index: 20;
+  }
+
+  .cabecera__fila {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    grid-template-areas:
+      'menu logo idioma carrito'
+      'buscador buscador buscador buscador';
+    align-items: center;
+    column-gap: var(--espacio-2);
+    row-gap: var(--espacio-3);
+    padding-block: var(--espacio-3) var(--espacio-4);
+  }
+
+  .menu {
+    grid-area: menu;
+    margin-left: calc(-1 * var(--espacio-3));
+  }
+
+  .cabecera__logo {
+    grid-area: logo;
+    display: flex;
+  }
+
+  .buscador {
+    grid-area: buscador;
+  }
+
+  .cabecera__idioma {
+    grid-area: idioma;
+  }
+
+  .cabecera__carrito {
+    grid-area: carrito;
+  }
+
+  /* Menú del teléfono */
+  .menu__boton {
+    list-style: none;
+  }
+
+  .menu__boton::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu :global(.menu__cerrar),
+  .menu[open] :global(.menu__abrir) {
+    display: none;
+  }
+
+  .menu[open] :global(.menu__cerrar) {
+    display: block;
+  }
+
+  .menu__panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    max-height: calc(100vh - 7rem);
+    overflow-y: auto;
+    background: var(--color-blanco);
+    color: var(--color-marino);
+    border-bottom: 1px solid var(--color-marino);
+    --color-foco: var(--color-marino);
+  }
+
+  .menu__lista {
+    list-style: none;
+    margin: 0;
+    padding: var(--espacio-2) 0;
+  }
+
+  .menu__lista--secundaria {
+    border-top: var(--linea);
+  }
+
+  .menu__lista a {
+    display: block;
+    padding: var(--espacio-3) var(--margen-pagina);
+    font-family: var(--fuente-titulos);
+    font-weight: 600;
+    font-size: var(--texto-m);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .menu__lista a[aria-current='page'] {
+    box-shadow: inset 4px 0 0 var(--color-naranja);
+    background: var(--color-fondo-imagen);
+  }
+
+  /* Buscador */
+  .buscador {
+    display: flex;
+    background: var(--color-blanco);
+    border: 1px solid var(--color-blanco);
+  }
+
+  .buscador:focus-within {
+    outline: 2px solid var(--color-blanco);
+    outline-offset: 2px;
+  }
+
+  .buscador__campo {
+    flex: 1;
+    min-width: 0;
+    min-height: var(--alto-control);
+    padding: 0 var(--espacio-3);
+    border: 0;
+    background: transparent;
+    color: var(--color-tinta);
+    appearance: none;
+  }
+
+  .buscador__campo::placeholder {
+    color: var(--color-gris);
+    opacity: 1;
+  }
+
+  .buscador__campo::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  .buscador__campo:focus-visible {
+    outline: none;
+  }
+
+  .buscador__boton {
+    display: grid;
+    place-items: center;
+    width: var(--alto-control);
+    border: 0;
+    border-left: 1px solid var(--color-linea);
+    background: transparent;
+    color: var(--color-marino);
+  }
+
+  .buscador__boton:focus-visible {
+    outline: 2px solid var(--color-marino);
+    outline-offset: -4px;
+  }
+
+  /* Idioma y carrito */
+  .cabecera__idioma,
+  .cabecera__carrito {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--espacio-2);
+    min-width: var(--alto-control);
+    min-height: var(--alto-control);
+    padding: 0 var(--espacio-2);
+    font-family: var(--fuente-titulos);
+    font-weight: 600;
+    font-size: var(--texto-s);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid transparent;
+  }
+
+  .cabecera__idioma:hover,
+  .cabecera__carrito:hover {
+    border-color: var(--color-linea-sobre-marino);
+  }
+
+  .cabecera__carrito {
+    position: relative;
+    margin-right: calc(-1 * var(--espacio-2));
+  }
+
+  .cabecera__carrito[aria-current='page'] {
+    box-shadow: inset 0 -3px 0 var(--color-naranja);
+  }
+
+  .cabecera__carrito-texto {
+    display: none;
+  }
+
+  .cabecera__cuenta {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.125rem;
+    min-width: 1.25rem;
+    padding: 0.125rem 0.25rem;
+    background: var(--color-blanco);
+    color: var(--color-marino);
+    font-family: var(--fuente-texto);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    line-height: 1.1;
+    letter-spacing: 0;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cabecera__cuenta[hidden] {
+    display: none;
+  }
+
+  /* Navegación de computadora */
+  .navegacion {
+    display: none;
+    background: var(--color-blanco);
+    border-bottom: var(--linea);
+  }
+
+  .navegacion__lista {
+    display: flex;
+    gap: var(--espacio-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .navegacion__lista a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 3rem;
+    padding: 0 var(--espacio-3);
+    color: var(--color-marino);
+    font-family: var(--fuente-titulos);
+    font-weight: 600;
+    font-size: var(--texto-s);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .navegacion__lista li:first-child a {
+    margin-left: calc(-1 * var(--espacio-3));
+  }
+
+  .navegacion__lista a:hover {
+    background: var(--color-fondo-imagen);
+  }
+
+  .navegacion__lista a[aria-current='page']::after {
+    content: '';
+    position: absolute;
+    left: var(--espacio-3);
+    right: var(--espacio-3);
+    bottom: 0;
+    height: 3px;
+    background: var(--color-naranja);
+  }
+
+  .navegacion__lista a:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .navegacion__mayoreo {
+    margin-left: auto;
+    border-left: var(--linea);
+    padding-left: var(--espacio-3);
+  }
+
+  @media (min-width: 1024px) {
+    .cabecera__fila {
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      grid-template-areas: 'logo buscador idioma carrito';
+      column-gap: var(--espacio-5);
+      padding-block: var(--espacio-4);
+    }
+
+    .menu {
+      display: none;
+    }
+
+    .buscador {
+      max-width: 36rem;
+      width: 100%;
+      justify-self: center;
+    }
+
+    .cabecera__carrito {
+      padding: 0 var(--espacio-3);
+    }
+
+    .cabecera__carrito-texto {
+      display: inline;
+    }
+
+    .cabecera__cuenta {
+      position: static;
+    }
+
+    .navegacion {
+      display: block;
+    }
+  }
+</style>
+
+<script>
+  // Menú del teléfono: se cierra con Escape, al tocar fuera o al pasar a pantalla grande.
+  const menu = document.querySelector<HTMLDetailsElement>('[data-menu]');
+  if (menu) {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.open) {
+        menu.open = false;
+        menu.querySelector('summary')?.focus();
+      }
+    });
+    document.addEventListener('click', (e) => {
+      if (menu.open && e.target instanceof Node && !menu.contains(e.target)) menu.open = false;
+    });
+    window.matchMedia('(min-width: 1024px)').addEventListener('change', (e) => {
+      if (e.matches) menu.open = false;
+    });
+  }
+
+  // El buscador muestra lo que se buscó; el cambio de idioma conserva los filtros.
+  const params = new URLSearchParams(location.search);
+  const campo = document.querySelector<HTMLInputElement>('[data-buscador]');
+  if (campo && params.get('q')) campo.value = params.get('q') ?? '';
+  const idioma = document.querySelector<HTMLAnchorElement>('[data-cambiar-idioma]');
+  if (idioma && location.search) idioma.href = idioma.href.split('?')[0] + location.search;
+</script>

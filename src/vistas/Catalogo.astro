@@ -1,0 +1,400 @@
+---
+import Icono from '../componentes/Icono.astro';
+import Migas from '../componentes/Migas.astro';
+import TarjetaProducto from '../componentes/TarjetaProducto.astro';
+import Base from '../layouts/Base.astro';
+import type { Idioma } from '../lib/catalogo.ts';
+import { CRITERIOS_VACIOS, filtrar, ORDENES } from '../lib/filtros.ts';
+import { obtenerCatalogo } from '../lib/sitio.ts';
+import { recurso, ruta } from '../i18n/rutas.ts';
+import { textos } from '../i18n/textos.ts';
+
+interface Props {
+  idioma: Idioma;
+  categoria?: string;
+}
+
+const { idioma, categoria: idCategoria } = Astro.props;
+const t = textos(idioma);
+const catalogo = obtenerCatalogo();
+const categoria = idCategoria ? catalogo.categorias.find((c) => c.id === idCategoria) : undefined;
+const productos = categoria ? catalogo.productos.filter((p) => p.categoria === categoria.id) : catalogo.productos;
+
+// Mismo orden que «Relevancia» en el navegador: disponibles primero, destacados y luego el orden del CSV.
+const ordenados = filtrar(
+  productos.map((p) => ({ ...p, precio: p.precioFinal, producto: p })),
+  CRITERIOS_VACIOS,
+).map((p) => p.producto);
+
+const marcas = [...new Set(productos.map((p) => p.marca).filter((m) => m !== ''))].sort((a, b) =>
+  a.localeCompare(b, idioma),
+);
+const cuenta = (id: string) => catalogo.productos.filter((p) => p.categoria === id).length;
+const titulo = categoria ? categoria.nombre[idioma] : t.catalogo.titulo;
+const descripcion = categoria?.descripcion[idioma] || t.catalogo.descripcion;
+const migas = [
+  { texto: t.nav.inicio, href: ruta(idioma, 'inicio') },
+  { texto: t.nav.tienda, href: ruta(idioma, 'tienda') },
+  ...(categoria ? [{ texto: categoria.nombre[idioma] }] : []),
+];
+---
+
+<Base
+  idioma={idioma}
+  titulo={`${titulo} | Azeta Cargo`}
+  descripcion={descripcion}
+  pagina={categoria ? 'categoria' : 'tienda'}
+  parametro={categoria?.id}
+  categoriaActiva={categoria?.id}
+>
+  <div class="contenedor catalogo" data-catalogo data-indice={recurso('indice.json')}>
+    <Migas etiqueta={t.producto.migas} elementos={migas} />
+
+    <header class="catalogo__encabezado">
+      <h1>{titulo}</h1>
+      <p class="catalogo__descripcion">{descripcion}</p>
+      <p class="catalogo__busqueda" data-busqueda hidden>
+        <span data-busqueda-texto></span>
+        <a class="enlace" href={categoria ? ruta(idioma, 'categoria', categoria.id) : ruta(idioma, 'tienda')} data-quitar-busqueda
+          >{t.catalogo.quitarBusqueda}</a
+        >
+      </p>
+    </header>
+
+    <div class="catalogo__cuerpo">
+      <aside class="filtros" aria-label={t.catalogo.filtrar}>
+        <button
+          class="boton boton--bloque filtros__alternar"
+          type="button"
+          aria-expanded="false"
+          aria-controls="panel-filtros"
+          data-alternar-filtros
+        >
+          <Icono nombre="filtro" tamano={20} />
+          {t.catalogo.filtrar}
+        </button>
+        <div class="filtros__panel" id="panel-filtros" data-panel-filtros>
+          <form class="filtros__formulario" data-formulario-filtros>
+            <fieldset class="filtros__grupo">
+              <legend class="rotulo filtros__titulo">{t.catalogo.categoria}</legend>
+              <ul role="list" class="filtros__categorias">
+                <li>
+                  <a
+                    href={ruta(idioma, 'tienda')}
+                    aria-current={categoria ? undefined : 'page'}
+                    data-enlace-categoria
+                    data-base={ruta(idioma, 'tienda')}
+                  >
+                    <span>{t.catalogo.todas}</span>
+                    <span class="filtros__cuenta">{catalogo.productos.length}</span>
+                  </a>
+                </li>
+                {
+                  catalogo.categorias.map((c) => (
+                    <li>
+                      <a
+                        href={ruta(idioma, 'categoria', c.id)}
+                        aria-current={c.id === categoria?.id ? 'page' : undefined}
+                        data-enlace-categoria
+                        data-base={ruta(idioma, 'categoria', c.id)}
+                      >
+                        <span>{c.nombre[idioma]}</span>
+                        <span class="filtros__cuenta">{cuenta(c.id)}</span>
+                      </a>
+                    </li>
+                  ))
+                }
+              </ul>
+            </fieldset>
+
+            {
+              marcas.length > 0 && (
+                <fieldset class="filtros__grupo">
+                  <legend class="rotulo filtros__titulo">{t.catalogo.marca}</legend>
+                  {marcas.map((marca) => (
+                    <label class="filtros__casilla">
+                      <input class="casilla" type="checkbox" name="marca" value={marca} />
+                      <span>{marca}</span>
+                      <span class="filtros__cuenta" data-cuenta-marca={marca}>
+                        {productos.filter((p) => p.marca === marca).length}
+                      </span>
+                    </label>
+                  ))}
+                </fieldset>
+              )
+            }
+
+            <fieldset class="filtros__grupo">
+              <legend class="rotulo filtros__titulo">{t.catalogo.precio}</legend>
+              <div class="filtros__precio">
+                <div class="campo">
+                  <label class="campo__etiqueta" for="precio-minimo">{t.catalogo.minimo}</label>
+                  <input class="control" id="precio-minimo" name="min" type="number" min="0" step="1" inputmode="decimal" />
+                </div>
+                <div class="campo">
+                  <label class="campo__etiqueta" for="precio-maximo">{t.catalogo.maximo}</label>
+                  <input class="control" id="precio-maximo" name="max" type="number" min="0" step="1" inputmode="decimal" />
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="filtros__grupo">
+              <legend class="rotulo filtros__titulo">{t.catalogo.disponibilidad}</legend>
+              <label class="filtros__casilla">
+                <input class="casilla" type="checkbox" name="disponible" value="1" />
+                <span>{t.catalogo.soloDisponibles}</span>
+              </label>
+            </fieldset>
+
+            <div class="filtros__acciones">
+              <button class="boton boton--bloque" type="button" data-quitar-filtros>{t.catalogo.quitarFiltros}</button>
+              <button class="boton boton--primario boton--bloque filtros__ver" type="button" data-cerrar-filtros>
+                {t.catalogo.cerrarFiltros}
+              </button>
+            </div>
+          </form>
+        </div>
+      </aside>
+
+      <section class="resultados" aria-labelledby="titulo-resultados">
+        <h2 class="sr-only" id="titulo-resultados">{t.catalogo.resultados}</h2>
+        <div class="resultados__barra">
+          <p class="resultados__cuenta" role="status" data-cuenta-resultados>{t.catalogo.productos(ordenados.length)}</p>
+          <div class="resultados__orden">
+            <label class="campo__etiqueta" for="orden">{t.catalogo.ordenar}</label>
+            <div class="desplegable">
+              <select class="control" id="orden" name="orden" data-orden>
+                {ORDENES.map((o) => <option value={o}>{t.catalogo.orden[o]}</option>)}
+              </select>
+              <Icono nombre="chevron-abajo" tamano={18} />
+            </div>
+          </div>
+        </div>
+
+        <ul class="celdas resultados__lista" role="list" data-lista-productos>
+          {
+            ordenados.map((p, i) => (
+              <li>
+                <TarjetaProducto producto={p} idioma={idioma} prioridad={i < 2} />
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="resultados__vacio" data-vacio hidden>
+          <p data-vacio-texto>{t.catalogo.vacio}</p>
+          <button class="boton" type="button" data-quitar-todo>{t.catalogo.quitarFiltros}</button>
+        </div>
+
+        <p class="resultados__nota">{t.catalogo.notaPrecios}</p>
+      </section>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .catalogo {
+    padding-top: var(--espacio-5);
+  }
+
+  .catalogo__encabezado {
+    display: grid;
+    gap: var(--espacio-3);
+    padding: var(--espacio-6) 0 var(--espacio-6);
+  }
+
+  .catalogo__descripcion {
+    max-width: 60ch;
+    color: var(--color-gris);
+  }
+
+  .catalogo__busqueda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-2) var(--espacio-4);
+    align-items: baseline;
+    font-size: var(--texto-l);
+    font-weight: 500;
+  }
+
+  .catalogo__busqueda[hidden] {
+    display: none;
+  }
+
+  .catalogo__busqueda a {
+    font-size: var(--texto-s);
+  }
+
+  .catalogo__cuerpo {
+    display: grid;
+    gap: var(--espacio-5);
+  }
+
+  /* Filtros */
+  .filtros__panel {
+    display: none;
+    margin-top: var(--espacio-3);
+    padding: var(--espacio-4);
+    border: var(--linea);
+  }
+
+  .filtros__panel[data-abierto] {
+    display: block;
+  }
+
+  .filtros__formulario {
+    display: grid;
+    gap: var(--espacio-5);
+  }
+
+  .filtros__grupo {
+    display: grid;
+    gap: var(--espacio-2);
+  }
+
+  .filtros__titulo {
+    margin-bottom: var(--espacio-2);
+    color: var(--color-marino);
+  }
+
+  .filtros__categorias {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: var(--linea);
+  }
+
+  .filtros__categorias a {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--espacio-3);
+    padding: var(--espacio-2) var(--espacio-2) var(--espacio-2) var(--espacio-3);
+    border-bottom: var(--linea);
+    color: var(--color-tinta);
+    font-size: var(--texto-s);
+    text-decoration: none;
+  }
+
+  .filtros__categorias a:hover {
+    background: var(--color-fondo-imagen);
+  }
+
+  .filtros__categorias a[aria-current='page'] {
+    font-weight: 500;
+    color: var(--color-marino);
+    box-shadow: inset 3px 0 0 var(--color-naranja);
+  }
+
+  .filtros__cuenta {
+    color: var(--color-gris);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .filtros__casilla {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-3);
+    min-height: 2.25rem;
+    font-size: var(--texto-s);
+    cursor: pointer;
+  }
+
+  .filtros__casilla .filtros__cuenta {
+    margin-left: auto;
+  }
+
+  .filtros__precio {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--espacio-3);
+  }
+
+  .filtros__acciones {
+    display: grid;
+    gap: var(--espacio-3);
+  }
+
+  /* Resultados */
+  .resultados__barra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--espacio-3) var(--espacio-5);
+    margin-bottom: var(--espacio-4);
+  }
+
+  .resultados__cuenta {
+    font-family: var(--fuente-titulos);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-marino);
+  }
+
+  .resultados__orden {
+    display: grid;
+    gap: var(--espacio-1);
+    min-width: 15rem;
+  }
+
+  .resultados__lista > li[hidden] {
+    display: none;
+  }
+
+  .resultados__vacio {
+    display: grid;
+    justify-items: start;
+    gap: var(--espacio-4);
+    padding: var(--espacio-6) var(--espacio-5);
+    border: var(--linea);
+  }
+
+  .resultados__vacio[hidden] {
+    display: none;
+  }
+
+  .resultados__nota {
+    margin-top: var(--espacio-4);
+    font-size: var(--texto-s);
+    color: var(--color-gris);
+  }
+
+  @media (min-width: 1024px) {
+    .catalogo__cuerpo {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--separacion);
+      align-items: start;
+    }
+
+    .filtros {
+      grid-column: span 3;
+      position: sticky;
+      top: var(--espacio-4);
+    }
+
+    .filtros__alternar,
+    .filtros__ver {
+      display: none;
+    }
+
+    .filtros__panel {
+      display: block;
+      margin-top: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .resultados {
+      grid-column: span 9;
+    }
+
+    .resultados :global(.celdas) {
+      --columnas: 3;
+    }
+  }
+</style>
+
+<script>
+  import '../cliente/catalogo.ts';
+</script>

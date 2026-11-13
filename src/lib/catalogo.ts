@@ -150,25 +150,36 @@ const siNo = (obligatorio: boolean) =>
       return r;
     });
 
-const precio = (obligatorio: boolean) =>
-  z
-    .string()
-    .optional()
-    .transform((v, ctx): number | null => {
-      const n = leerPrecio(v ?? '');
-      if (n === null) {
-        if (obligatorio) {
-          ctx.addIssue({ code: 'custom', message: 'falta el precio (por ejemplo 129.99)' });
-          return z.NEVER;
-        }
-        return null;
-      }
-      if (Number.isNaN(n) || n <= 0) {
-        ctx.addIssue({ code: 'custom', message: 'debe ser un número mayor que 0, por ejemplo 129.99' });
-        return z.NEVER;
-      }
-      return n;
-    });
+const MENSAJE_PRECIO = 'debe ser un número mayor que 0, por ejemplo 129.99';
+
+const precioObligatorio = z
+  .string()
+  .optional()
+  .transform((v, ctx): number => {
+    const n = leerPrecio(v ?? '');
+    if (n === null) {
+      ctx.addIssue({ code: 'custom', message: 'falta el precio (por ejemplo 129.99)' });
+      return z.NEVER;
+    }
+    if (Number.isNaN(n) || n <= 0) {
+      ctx.addIssue({ code: 'custom', message: MENSAJE_PRECIO });
+      return z.NEVER;
+    }
+    return n;
+  });
+
+const precioOpcional = z
+  .string()
+  .optional()
+  .transform((v, ctx): number | null => {
+    const n = leerPrecio(v ?? '');
+    if (n === null) return null;
+    if (Number.isNaN(n) || n <= 0) {
+      ctx.addIssue({ code: 'custom', message: MENSAJE_PRECIO });
+      return z.NEVER;
+    }
+    return n;
+  });
 
 const filaProducto = z.object({
   sku: z
@@ -193,8 +204,8 @@ const filaProducto = z.object({
   nombre_es: textoObligatorio('falta el nombre en español'),
   nombre_en: textoOpcional,
   marca: textoOpcional,
-  precio_usd: precio(true),
-  precio_oferta_usd: precio(false),
+  precio_usd: precioObligatorio,
+  precio_oferta_usd: precioOpcional,
   disponible: siNo(true),
   destacado: siNo(false),
   nuevo: siNo(false),

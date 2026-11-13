@@ -42,6 +42,8 @@ export default defineConfig({
     ? undefined
     : {
         command: 'npm run preview -- --port 4321',
+        // Astro 7 se va al fondo si detecta un asistente de IA; aquí se necesita en primer plano.
+        env: { ASTRO_PREVIEW_BACKGROUND: '0' },
         url: urlLocal,
         reuseExistingServer: !process.env.CI,
         timeout: 60_000,

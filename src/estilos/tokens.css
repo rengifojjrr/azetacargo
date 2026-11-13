@@ -1,0 +1,81 @@
+/*
+ * Tokens de diseño de Azeta Cargo.
+ * Es el ÚNICO archivo donde se escriben colores a mano (una prueba lo verifica).
+ * Todo lo demás usa var(--color-…).
+ */
+:root {
+  /* Colores de la marca */
+  --color-marino: #0B2540;
+  --color-marino-claro: #173A5E;
+  --color-tinta: #111418;
+  --color-gris: #5B6470;
+  --color-linea: #D9DDE3;
+  --color-fondo-imagen: #F3F4F6;
+  --color-blanco: #FFFFFF;
+  --color-naranja: #F47A20;
+  --color-turquesa: #14CFD2;
+  /* Funcionales */
+  --color-error: #B3261E;
+  --color-linea-sobre-marino: #2E4A69;
+
+  /* Papeles */
+  --color-texto: var(--color-tinta);
+  --color-texto-suave: var(--color-gris);
+  --color-fondo: var(--color-blanco);
+  --color-titulos: var(--color-marino);
+  --color-sobre-marino: var(--color-blanco);
+  --color-sobre-marino-suave: var(--color-linea);
+  --color-foco: var(--color-marino);
+  --color-borde-campo: var(--color-gris);
+
+  /* Letras */
+  --fuente-texto: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --fuente-titulos: 'IBM Plex Sans Condensed', 'Arial Narrow', 'IBM Plex Sans', sans-serif;
+  --fuente-codigo: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  /* Escala (12 · 14 · 16 · 18 · 21 · 24 · 30 · 36 · 48 · 60) */
+  --texto-xs: 0.75rem;
+  --texto-s: 0.875rem;
+  --texto-m: 1rem;
+  --texto-l: 1.125rem;
+  --texto-xl: 1.3125rem;
+  --texto-2xl: 1.5rem;
+  --texto-3xl: 1.875rem;
+  --texto-4xl: 2.25rem;
+  --texto-5xl: 3rem;
+  --texto-6xl: 3.75rem;
+
+  /* Espacios (base 4 px) */
+  --espacio-1: 0.25rem;
+  --espacio-2: 0.5rem;
+  --espacio-3: 0.75rem;
+  --espacio-4: 1rem;
+  --espacio-5: 1.5rem;
+  --espacio-6: 2rem;
+  --espacio-7: 3rem;
+  --espacio-8: 4rem;
+  --espacio-9: 5rem;
+
+  /* Retícula */
+  --ancho-maximo: 1240px;
+  --margen-pagina: 1rem;
+  --separacion: 1rem;
+  --espacio-seccion: 3rem;
+
+  /* Líneas y esquinas: rectas en todo; como mucho 2 px en los campos */
+  --linea: 1px solid var(--color-linea);
+  --radio: 0;
+  --radio-campo: 2px;
+  --alto-control: 2.75rem;
+
+  /* Movimiento */
+  --duracion: 120ms;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --margen-pagina: 2rem;
+    --separacion: 1.5rem;
+    --espacio-seccion: 5rem;
+  }
+}
