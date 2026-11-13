@@ -1,0 +1,8 @@
+﻿id,nombre_es,nombre_en,icono,orden,descripcion_es,descripcion_en
+electronica,Electrónica y teléfonos,Electronics & phones,movil,1,"Teléfonos, tabletas, audífonos y televisores.","Phones, tablets, earbuds and TVs."
+energia,Energía,Power,energia,2,"Estaciones de energía, power banks, ventiladores recargables y luces solares.","Power stations, power banks, rechargeable fans and solar lights."
+hogar,Hogar,Home,hogar,3,"Colchones, camas, refrigeradores y microondas.","Mattresses, beds, refrigerators and microwaves."
+herramientas,Herramientas,Tools,herramientas,4,"Taladros inalámbricos, sierras y juegos de herramientas.","Cordless drills, saws and tool sets."
+auto,Auto,Automotive,auto,5,"Arrancadores de batería, cables para pasar corriente y compresores de aire.","Jump starters, jumper cables and air compressors."
+oficina,Oficina,Office,oficina,6,"Impresoras, papel y artículos de oficina.","Printers, paper and office supplies."
+bicicletas,Bicicletas,Bikes,bicicleta,7,Bicicletas para adultos y para niños.,Bikes for adults and kids.
